@@ -66,7 +66,9 @@
             <div class="mb-3 row align-items-center gx-2">
                 <label for="email" class="col-auto col-form-label mb-0 pe-2 text-end">Email:</label>
                 <div class="col">
-                    <InputText id="email" class="form-control account-input" @bind-Value="Customer.Email" aria-required="true" />
+                    <div class="d-flex justify-content-end w-100">
+                        <InputText id="email" class="form-control account-input" @bind-Value="Customer.Email" aria-required="true" />
+                    </div>
                     <ValidationMessage For="() => Customer.Email" class="text-danger" />
                 </div>
             </div>
