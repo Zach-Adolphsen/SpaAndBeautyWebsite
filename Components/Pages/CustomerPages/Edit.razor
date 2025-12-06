@@ -1,0 +1,114 @@
+﻿@page "/customers/edit"
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Models
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Customer</h2>
+<hr />
+@if (Customer is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Customer" OnValidSubmit="UpdateCustomer" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Customer.CustomerId" value="@Customer.CustomerId" />
+                <div class="mb-3">
+                    <label for="firstname" class="form-label">FirstName:</label>
+                    <InputText id="firstname" @bind-Value="Customer.FirstName" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Customer.FirstName" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="lastname" class="form-label">LastName:</label>
+                    <InputText id="lastname" @bind-Value="Customer.LastName" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Customer.LastName" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username:</label>
+                    <InputText id="username" @bind-Value="Customer.Username" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Customer.Username" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password:</label>
+                    <InputText id="password" @bind-Value="Customer.Password" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Customer.Password" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="phonenumber" class="form-label">PhoneNumber:</label>
+                    <InputText id="phonenumber" @bind-Value="Customer.PhoneNumber" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Customer.PhoneNumber" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <InputText id="email" @bind-Value="Customer.Email" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Customer.Email" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/customers">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int CustomerId { get; set; }
+
+    [SupplyParameterFromForm]
+    private Customer? Customer { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Customer ??= await context.Customer.FirstOrDefaultAsync(m => m.CustomerId == CustomerId);
+
+        if (Customer is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateCustomer()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Customer!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!CustomerExists(Customer!.CustomerId))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/customers");
+    }
+
+    private bool CustomerExists(int customerid)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Customer.Any(e => e.CustomerId == customerid);
+    }
+}

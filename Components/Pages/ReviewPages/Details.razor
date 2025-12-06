@@ -1,0 +1,54 @@
+﻿@page "/reviews/details"
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Models
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>Review</h2>
+    <hr />
+    @if (review is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">EmployeeId</dt>
+            <dd class="col-sm-10">@review.EmployeeId</dd>
+            <dt class="col-sm-2">CustomerId</dt>
+            <dd class="col-sm-10">@review.CustomerId</dd>
+            <dt class="col-sm-2">ServiceId</dt>
+            <dd class="col-sm-10">@review.ServiceId</dd>
+            <dt class="col-sm-2">Description</dt>
+            <dd class="col-sm-10">@review.Description</dd>
+            <dt class="col-sm-2">Rating</dt>
+            <dd class="col-sm-10">@review.Rating</dd>
+        </dl>
+        <div>
+            <a href="@($"/reviews/edit?reviewid={review.ReviewId}")">Edit</a> |
+            <a href="@($"/reviews")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Review? review;
+
+    [SupplyParameterFromQuery]
+    private int ReviewId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        review = await context.Review.FirstOrDefaultAsync(m => m.ReviewId == ReviewId);
+
+        if (review is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

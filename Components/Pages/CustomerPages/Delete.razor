@@ -1,0 +1,75 @@
+﻿@page "/customers/delete"
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Models
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Delete</PageTitle>
+
+<h1>Delete</h1>
+
+<p>Are you sure you want to delete this?</p>
+<div>
+    <h2>Customer</h2>
+    <hr />
+    @if (customer is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">FirstName</dt>
+            <dd class="col-sm-10">@customer.FirstName</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">LastName</dt>
+            <dd class="col-sm-10">@customer.LastName</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Username</dt>
+            <dd class="col-sm-10">@customer.Username</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Password</dt>
+            <dd class="col-sm-10">@customer.Password</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">PhoneNumber</dt>
+            <dd class="col-sm-10">@customer.PhoneNumber</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Email</dt>
+            <dd class="col-sm-10">@customer.Email</dd>
+        </dl>
+        <EditForm method="post" Model="customer" OnValidSubmit="DeleteCustomer" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(customer is null)">Delete</button> |
+            <a href="/customers">Back to List</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private Customer? customer;
+
+    [SupplyParameterFromQuery]
+    private int CustomerId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        customer = await context.Customer.FirstOrDefaultAsync(m => m.CustomerId == CustomerId);
+
+        if (customer is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    private async Task DeleteCustomer()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Customer.Remove(customer!);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/customers");
+    }
+}

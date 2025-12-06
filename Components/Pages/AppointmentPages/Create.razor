@@ -1,0 +1,69 @@
+﻿@page "/appointments/create"
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Models
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Appointment</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Appointment" OnValidSubmit="AddAppointment" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="employeeid" class="form-label">EmployeeId:</label> 
+                <InputNumber id="employeeid" @bind-Value="Appointment.EmployeeId" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Appointment.EmployeeId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="customerid" class="form-label">CustomerId:</label> 
+                <InputNumber id="customerid" @bind-Value="Appointment.CustomerId" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Appointment.CustomerId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="serviceid" class="form-label">ServiceId:</label> 
+                <InputNumber id="serviceid" @bind-Value="Appointment.ServiceId" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Appointment.ServiceId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="scheduleddatetime" class="form-label">ScheduledDateTime:</label> 
+                <InputDate id="scheduleddatetime" @bind-Value="Appointment.ScheduledDateTime" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Appointment.ScheduledDateTime" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="durationminutes" class="form-label">DurationMinutes:</label> 
+                <InputNumber id="durationminutes" @bind-Value="Appointment.DurationMinutes" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Appointment.DurationMinutes" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="status" class="form-label">Status:</label> 
+                <InputText id="status" @bind-Value="Appointment.Status" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Appointment.Status" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/appointments">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Appointment Appointment { get; set; } = new() { Status = "Scheduled" };
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddAppointment()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Appointment.Add(Appointment);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/appointments");
+    }
+}

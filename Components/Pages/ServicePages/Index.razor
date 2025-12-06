@@ -1,0 +1,39 @@
+﻿@page "/services"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using SpaAndBeautyWebsite.Models
+@using SpaAndBeautyWebsite.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="services/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.Service">
+    <PropertyColumn Property="service => service.Name" />
+    <PropertyColumn Property="service => service.Description" />
+    <PropertyColumn Property="service => service.DurationMinutes" />
+    <PropertyColumn Property="service => service.DurationPrice" />
+
+    <TemplateColumn Context="service">
+        <a href="@($"services/edit?serviceid={service.ServiceId}")">Edit</a> |
+        <a href="@($"services/details?serviceid={service.ServiceId}")">Details</a> |
+        <a href="@($"services/delete?serviceid={service.ServiceId}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private SpaAndBeautyWebsiteContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

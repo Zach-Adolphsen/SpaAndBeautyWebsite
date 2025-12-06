@@ -1,0 +1,109 @@
+﻿@page "/reviews/edit"
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Models
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Review</h2>
+<hr />
+@if (Review is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Review" OnValidSubmit="UpdateReview" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Review.ReviewId" value="@Review.ReviewId" />
+                <div class="mb-3">
+                    <label for="employeeid" class="form-label">EmployeeId:</label>
+                    <InputNumber id="employeeid" @bind-Value="Review.EmployeeId" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Review.EmployeeId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="customerid" class="form-label">CustomerId:</label>
+                    <InputNumber id="customerid" @bind-Value="Review.CustomerId" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Review.CustomerId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="serviceid" class="form-label">ServiceId:</label>
+                    <InputNumber id="serviceid" @bind-Value="Review.ServiceId" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Review.ServiceId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description:</label>
+                    <InputText id="description" @bind-Value="Review.Description" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Review.Description" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Rating:</label>
+                    <InputNumber id="rating" @bind-Value="Review.Rating" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Review.Rating" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/reviews">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int ReviewId { get; set; }
+
+    [SupplyParameterFromForm]
+    private Review? Review { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Review ??= await context.Review.FirstOrDefaultAsync(m => m.ReviewId == ReviewId);
+
+        if (Review is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateReview()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Review!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!ReviewExists(Review!.ReviewId))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/reviews");
+    }
+
+    private bool ReviewExists(int reviewid)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Review.Any(e => e.ReviewId == reviewid);
+    }
+}
