@@ -47,3 +47,5 @@ TestResults/
 
 # Node modules (if using Node.js)
 node_modules/
+.vs/SpaAndBeautyWebsite/CopilotIndices/17.14.1368.60722/CodeChunks.db
+*.v2
