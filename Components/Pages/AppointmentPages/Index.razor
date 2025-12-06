@@ -14,27 +14,79 @@
     <a href="appointments/create">Create New</a>
 </p>
 
-<QuickGrid Class="table" Items="context.Appointment">
-    <PropertyColumn Property="appointment => appointment.EmployeeId" />
-    <PropertyColumn Property="appointment => appointment.CustomerId" />
-    <PropertyColumn Property="appointment => appointment.ServiceId" />
-    <PropertyColumn Property="appointment => appointment.ScheduledDateTime" />
-    <PropertyColumn Property="appointment => appointment.DurationMinutes" />
-    <PropertyColumn Property="appointment => appointment.Status" />
+@* We bind to 'items', which allows us to show "Unknown" instead of hiding the row *@
+<QuickGrid Class="table" Items="items">
 
-    <TemplateColumn Context="appointment">
-        <a href="@($"appointments/edit?appointmentid={appointment.AppointmentId}")">Edit</a> |
-        <a href="@($"appointments/details?appointmentid={appointment.AppointmentId}")">Details</a> |
-        <a href="@($"appointments/delete?appointmentid={appointment.AppointmentId}")">Delete</a>
+    <PropertyColumn Property="@(p => p.EmployeeName)" Title="Employee" Sortable="true" />
+    <PropertyColumn Property="@(p => p.CustomerName)" Title="Customer" Sortable="true" />
+    <PropertyColumn Property="@(p => p.ServiceName)" Title="Service" Sortable="true" />
+
+    <PropertyColumn Property="@(p => p.ScheduledDateTime)" Title="Scheduled Date" Format="g" Sortable="true" />
+    <PropertyColumn Property="@(p => p.DurationMinutes)" Title="Duration" Sortable="true" />
+    <PropertyColumn Property="@(p => p.Status)" Title="Status" Sortable="true" />
+
+    <TemplateColumn Context="p">
+        @* Note: We use p.AppointmentId here because 'p' is our custom ViewModel *@
+        <a href="@($"appointments/edit?appointmentid={p.AppointmentId}")">Edit</a> |
+        <a href="@($"appointments/details?appointmentid={p.AppointmentId}")">Details</a> |
+        <a href="@($"appointments/delete?appointmentid={p.AppointmentId}")">Delete</a>
     </TemplateColumn>
 </QuickGrid>
 
 @code {
     private SpaAndBeautyWebsiteContext context = default!;
 
+    // Use IQueryable of our custom class so QuickGrid can sort/filter automatically
+    private IQueryable<AppointmentViewModel> items = default!;
+
+    public class AppointmentViewModel
+    {
+        public int AppointmentId { get; set; }
+        public string EmployeeName { get; set; } = "";
+        public string CustomerName { get; set; } = "";
+        public string ServiceName { get; set; } = "";
+        public DateTime ScheduledDateTime { get; set; }
+        public int DurationMinutes { get; set; }
+        public string? Status { get; set; }
+    }
+
     protected override void OnInitialized()
     {
         context = DbFactory.CreateDbContext();
+
+        // THIS IS THE FIX: Using "Left Joins" (DefaultIfEmpty)
+        // This ensures the appointment shows up even if IDs are 0 or invalid.
+
+        items = from a in context.Appointment
+
+                    // Join Employee (Safe)
+                join e in context.Employee on a.EmployeeId equals e.EmployeeId into eGroup
+                from e in eGroup.DefaultIfEmpty()
+
+                    // Join Customer (Safe)
+                join c in context.Customer on a.CustomerId equals c.CustomerId into cGroup
+                from c in cGroup.DefaultIfEmpty()
+
+                    // Join Service (Safe)
+                join s in context.Service on a.ServiceId equals s.ServiceId into sGroup
+                from s in sGroup.DefaultIfEmpty()
+
+                select new AppointmentViewModel
+                {
+                    AppointmentId = a.AppointmentId,
+                    // If 'e' is null (no match), use "Unknown"
+                    EmployeeName = e != null ? e.FirstName + " " + e.LastName : "Unknown Employee",
+
+                    // If 'c' is null (no match), use "Unknown"
+                    CustomerName = c != null ? c.FirstName + " " + c.LastName : "Unknown Customer",
+
+                    // If 's' is null (no match), use "Unknown"
+                    ServiceName = s != null ? s.Name : "Unknown Service",
+
+                    ScheduledDateTime = a.ScheduledDateTime,
+                    DurationMinutes = a.DurationMinutes,
+                    Status = a.Status
+                };
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();
