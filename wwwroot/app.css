@@ -58,3 +58,83 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* 1. DEFINE THE LUXURY PALETTE */
+:root {
+    --spa-primary: #2C4F58; /* Deep Ocean Teal */
+    --spa-secondary: #F7F5F0; /* Off-white/Sand background */
+    --spa-gold: #C5A059; /* Luxury Gold Accent */
+    --spa-text: #4A4A4A; /* Soft Gray text (softer than black) */
+}
+
+/* 2. GLOBAL TYPOGRAPHY */
+body {
+    font-family: 'Lato', sans-serif;
+    color: var(--spa-text);
+    background-color: var(--spa-secondary); /* Removes the stark white background */
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+    font-family: 'Playfair Display', serif; /* The "Fancy" font */
+    color: var(--spa-primary);
+}
+
+/* 3. OVERRIDE BOOTSTRAP BUTTONS */
+.btn-primary {
+    background-color: var(--spa-primary);
+    border-color: var(--spa-primary);
+    border-radius: 0; /* Square edges look more premium than round */
+    padding: 10px 25px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+    .btn-primary:hover {
+        background-color: var(--spa-gold);
+        border-color: var(--spa-gold);
+        color: #fff;
+    }
+
+.btn-outline-primary {
+    color: var(--spa-primary);
+    border-color: var(--spa-primary);
+    border-radius: 0;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+    .btn-outline-primary:hover {
+        background-color: var(--spa-primary);
+        border-color: var(--spa-primary);
+    }
+
+/* 4. CARD STYLING */
+.card {
+    border: none; /* Remove default gray border */
+    border-radius: 0;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05); /* Very soft shadow */
+    transition: transform 0.3s ease;
+    background-color: #fff;
+}
+
+    .card:hover {
+        transform: translateY(-5px); /* Floating effect */
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+/* 5. SECTION HEADERS */
+.section-title {
+    font-size: 2.5rem;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+/* The little gold line under headers */
+.title-divider {
+    height: 3px;
+    width: 60px;
+    background-color: var(--spa-gold);
+    margin: 15px auto;
+}
