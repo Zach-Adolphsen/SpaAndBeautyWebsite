@@ -1,5 +1,7 @@
 ﻿@page "/create-account"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = "AnonymousOnly")]
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using SpaAndBeautyWebsite.Models
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
@@ -7,7 +9,6 @@
 @inject IJSRuntime JS
 
 <h1 class="text-center mb-4">Create an Account</h1>
-
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6 mx-auto">
         <EditForm class="w-100" method="post" Model="Customer" OnValidSubmit="AddCustomer" FormName="create" Enhance>
@@ -57,9 +58,7 @@
             <div class="mb-3 row align-items-center gx-2">
                 <label for="phonenumber" class="col-auto col-form-label mb-0 pe-2 text-end">Phone Number:</label>
                 <div class="col">
-                    <div class="d-flex justify-content-end w-100">
-                        <InputText id="phonenumber" class="form-control account-input" @bind-Value="Customer.PhoneNumber" aria-required="true" />
-                    </div>
+                    <InputText id="phonenumber" class="form-control account-input" @bind-Value="Customer.PhoneNumber" aria-required="true" />
                     <ValidationMessage For="() => Customer.PhoneNumber" class="text-danger" />
                 </div>
             </div>
@@ -110,7 +109,11 @@
         using var context = DbFactory.CreateDbContext();
         context.Customer.Add(Customer);
         await context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/");
+
+        // Do not sign-in via HttpContext inside the Blazor Server circuit (response already started).
+        // Instead navigate to a normal HTTP endpoint that performs the cookie sign-in, so cookies can be set.
+        var signinUrl = $"/signin-local?username={Uri.EscapeDataString(Customer.Username)}&id={Customer.CustomerId}&returnUrl=/";
+        NavigationManager.NavigateTo(signinUrl, forceLoad: true);
     }
 }
 
@@ -145,9 +148,7 @@
                 const widths = inputs.map(i => i.getBoundingClientRect().width);
                 const min = Math.min.apply(null, widths);
                 // apply the minimum width to every input (use px)
-                inputs.forEach(i => {
-                    i.style.width = min + 'px';
-                });
+                inputs.forEach(i => i.style.width = min + 'px');
             }
         };
     })();
