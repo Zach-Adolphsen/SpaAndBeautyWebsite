@@ -1,56 +1,98 @@
 ﻿@page "/appointments/create"
+@rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
 @using SpaAndBeautyWebsite.Models
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Create</PageTitle>
+<PageTitle>Create Appointment</PageTitle>
 
-<h1>Create</h1>
-
-<h2>Appointment</h2>
+<h1>Create Appointment</h1>
 <hr />
+
 <div class="row">
     <div class="col-md-4">
-        <EditForm method="post" Model="Appointment" OnValidSubmit="AddAppointment" FormName="create" Enhance>
+        <EditForm Model="Appointment" OnValidSubmit="AddAppointment" FormName="create">
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert"/>
+            <ValidationSummary class="text-danger" role="alert" />
+
             <div class="mb-3">
-                <label for="employeeid" class="form-label">EmployeeId:</label> 
-                <InputNumber id="employeeid" @bind-Value="Appointment.EmployeeId" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Appointment.EmployeeId" class="text-danger" /> 
-            </div>        
+                <label for="scheduleddate" class="form-label">Date:</label>
+                <InputDate id="scheduleddate"
+                           Value="SelectedDate"
+                           ValueChanged="@(async (DateTime value) => { SelectedDate = value; await LoadAvailableTimesAsync(); })"
+                           ValueExpression="@(() => SelectedDate)"
+                           class="form-control" />
+            </div>
+
             <div class="mb-3">
-                <label for="customerid" class="form-label">CustomerId:</label> 
-                <InputNumber id="customerid" @bind-Value="Appointment.CustomerId" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Appointment.CustomerId" class="text-danger" /> 
-            </div>        
+                <label for="employeeid" class="form-label">Employee:</label>
+                <InputSelect id="employeeid"
+                             TValue="int"
+                             Value="SelectedEmployeeId"
+                             ValueChanged="@(async (int value) => { SelectedEmployeeId = value; await LoadAvailableTimesAsync(); })"
+                             ValueExpression="@(() => SelectedEmployeeId)"
+                             class="form-control">
+                    <option value="0">-- Select Employee --</option>
+                    @foreach (var employee in Employees)
+                    {
+                        <option value="@employee.EmployeeId">@employee.FirstName @employee.LastName</option>
+                    }
+                </InputSelect>
+            </div>
+
             <div class="mb-3">
-                <label for="serviceid" class="form-label">ServiceId:</label> 
-                <InputNumber id="serviceid" @bind-Value="Appointment.ServiceId" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Appointment.ServiceId" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="scheduleddatetime" class="form-label">ScheduledDateTime:</label> 
-                <InputDate id="scheduleddatetime" @bind-Value="Appointment.ScheduledDateTime" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Appointment.ScheduledDateTime" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="durationminutes" class="form-label">DurationMinutes:</label> 
-                <InputNumber id="durationminutes" @bind-Value="Appointment.DurationMinutes" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Appointment.DurationMinutes" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="status" class="form-label">Status:</label> 
-                <InputText id="status" @bind-Value="Appointment.Status" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Appointment.Status" class="text-danger" /> 
-            </div>        
-            <button type="submit" class="btn btn-primary">Create</button>
+                <label for="serviceid" class="form-label">Service:</label>
+                <InputSelect id="serviceid"
+                             TValue="int"
+                             Value="SelectedServiceId"
+                             ValueChanged="@(async (int value) => { SelectedServiceId = value; await LoadAvailableTimesAsync(); })"
+                             ValueExpression="@(() => SelectedServiceId)"
+                             class="form-control">
+                    <option value="0">-- Select Service --</option>
+                    @foreach (var service in Services)
+                    {
+                        <option value="@service.ServiceId">@service.Name</option>
+                    }
+                </InputSelect>
+            </div>
+
+            @if (SelectedService != null)
+            {
+                <div class="mb-3">
+                    <label class="form-label">Duration (minutes):</label>
+                    <input class="form-control" value="@SelectedService.DurationMinutes" readonly />
+                </div>
+            }
+
+            @if (AvailableTimes.Any())
+            {
+                <div class="mb-3">
+                    <label for="scheduledtime" class="form-label">Time:</label>
+                    <InputSelect id="scheduledtime" @bind-Value="SelectedTime" class="form-control">
+                        <option value="">-- Select Time --</option>
+                        @foreach (var time in AvailableTimes)
+                        {
+                            <option value="@time">@DateTime.Today.Add(time).ToString("hh:mm tt")</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+            else if (SelectedEmployeeId > 0 && SelectedServiceId > 0)
+            {
+                <div class="mb-3">
+                    <p class="text-info">No available times for the selected date.</p>
+                </div>
+            }
+
+            <button type="submit" class="btn btn-primary" disabled="@(!SelectedTime.HasValue)">
+                Create Appointment
+            </button>
         </EditForm>
     </div>
 </div>
 
-<div>
+<div class="mt-3">
     <a href="/appointments">Back to List</a>
 </div>
 
@@ -58,12 +100,97 @@
     [SupplyParameterFromForm]
     private Appointment Appointment { get; set; } = new() { Status = "Scheduled" };
 
-    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private List<Employee> Employees { get; set; } = new();
+    private List<Service> Services { get; set; } = new();
+    private List<TimeSpan> AvailableTimes { get; set; } = new();
+    private DateTime SelectedDate { get; set; } = DateTime.Today;
+    private int SelectedEmployeeId { get; set; }
+    private int SelectedServiceId { get; set; }
+    private TimeSpan? SelectedTime { get; set; }
+
+    private Service? SelectedService => Services.FirstOrDefault(s => s.ServiceId == SelectedServiceId);
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Employees = await context.Employee
+            .OrderBy(e => e.FirstName)
+            .ThenBy(e => e.LastName)
+            .ToListAsync();
+        Services = await context.Service
+            .OrderBy(s => s.Name)
+            .ToListAsync();
+    }
+
+    private async Task LoadAvailableTimesAsync()
+    {
+        // Clear previous selections
+        AvailableTimes.Clear();
+        SelectedTime = null;
+
+        // Only proceed if all required fields are selected
+        if (SelectedEmployeeId <= 0 || SelectedServiceId <= 0 || SelectedService == null)
+        {
+            return;
+        }
+
+        // FIX: Update model immediately so validation passes
+        Appointment.EmployeeId = SelectedEmployeeId;
+        Appointment.ServiceId = SelectedServiceId;
+        Appointment.DurationMinutes = SelectedService.DurationMinutes;
+
+        var duration = SelectedService.DurationMinutes;
+        var start = new TimeSpan(9, 0, 0);
+        var end = new TimeSpan(17, 0, 0);
+
+        // Generate all possible 30-minute time slots
+        var allSlots = new List<TimeSpan>();
+        for (var time = start; time.Add(TimeSpan.FromMinutes(duration)) <= end; time = time.Add(TimeSpan.FromMinutes(30)))
+        {
+            allSlots.Add(time);
+        }
+
+        // Get existing appointments for this employee on the selected date
+        using var context = DbFactory.CreateDbContext();
+        var existingAppointments = await context.Appointment
+            .Where(a => a.EmployeeId == SelectedEmployeeId && a.ScheduledDateTime.Date == SelectedDate.Date)
+            .ToListAsync();
+
+        // Filter out conflicting time slots
+        AvailableTimes = allSlots.Where(slot =>
+        {
+            var slotEnd = slot.Add(TimeSpan.FromMinutes(duration));
+            return !existingAppointments.Any(appt =>
+            {
+                var apptStart = appt.ScheduledDateTime.TimeOfDay;
+                var apptEnd = apptStart.Add(TimeSpan.FromMinutes(appt.DurationMinutes));
+                // Check for overlap: slot starts before appointment ends AND slot ends after appointment starts
+                return slot < apptEnd && slotEnd > apptStart;
+            });
+        }).ToList();
+
+        // Force UI to refresh to show the new dropdown
+        StateHasChanged();
+    }
+
     private async Task AddAppointment()
     {
+        if (!SelectedTime.HasValue || SelectedService == null)
+            return;
+
+        // Set the final datetime
+        Appointment.ScheduledDateTime = SelectedDate.Date.Add(SelectedTime.Value);
+
+        // Ensure other fields are set (redundant safety)
+        Appointment.EmployeeId = SelectedEmployeeId;
+        Appointment.ServiceId = SelectedServiceId;
+        Appointment.DurationMinutes = SelectedService.DurationMinutes;
+        Appointment.Status = "Scheduled";
+
         using var context = DbFactory.CreateDbContext();
         context.Appointment.Add(Appointment);
         await context.SaveChangesAsync();
+
         NavigationManager.NavigateTo("/appointments");
     }
 }
