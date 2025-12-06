@@ -7,6 +7,34 @@
       "RelativeMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|solutionrelative:components\\pages\\createaccount.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|c:\\users\\d_rat\\documents\\spaandbeautywebsite\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|c:\\users\\d_rat\\documents\\spaandbeautywebsite\\models\\employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|solutionrelative:models\\employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|c:\\users\\d_rat\\documents\\spaandbeautywebsite\\data\\spaandbeautywebsitecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|solutionrelative:data\\spaandbeautywebsitecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|c:\\users\\d_rat\\documents\\spaandbeautywebsite\\components\\layout\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|solutionrelative:components\\layout\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|c:\\users\\d_rat\\documents\\spaandbeautywebsite\\components\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|solutionrelative:components\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|c:\\users\\d_rat\\documents\\spaandbeautywebsite\\components\\pages\\home.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|solutionrelative:components\\pages\\home.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|c:\\users\\d_rat\\documents\\spaandbeautywebsite\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|solutionrelative:components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|c:\\users\\d_rat\\documents\\spaandbeautywebsite\\components\\pages\\customerpages\\index.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|solutionrelative:components\\pages\\customerpages\\index.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
@@ -21,10 +49,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|c:\\users\\d_rat\\documents\\spaandbeautywebsite\\components\\pages\\error.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|solutionrelative:components\\pages\\error.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|c:\\users\\d_rat\\documents\\spaandbeautywebsite\\components\\pages\\home.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{1C1D92D1-876F-4FFC-83C2-9F7B0DCCEBCB}|SpaAndBeautyWebsite.csproj|solutionrelative:components\\pages\\home.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -46,33 +70,98 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Index.razor",
-              "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\CustomerPages\\Index.razor",
-              "RelativeDocumentMoniker": "Components\\Pages\\CustomerPages\\Index.razor",
-              "ToolTip": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\CustomerPages\\Index.razor",
-              "RelativeToolTip": "Components\\Pages\\CustomerPages\\Index.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-06T18:28:05.853Z",
+              "DocumentIndex": 2,
+              "Title": "Employee.cs",
+              "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Models\\Employee.cs",
+              "RelativeDocumentMoniker": "Models\\Employee.cs",
+              "ToolTip": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Models\\Employee.cs",
+              "RelativeToolTip": "Models\\Employee.cs",
+              "ViewState": "AgIAAC8AAACAmZmZmZkhwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-06T19:41:50.907Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Create.razor",
-              "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\CustomerPages\\Create.razor",
-              "RelativeDocumentMoniker": "Components\\Pages\\CustomerPages\\Create.razor",
-              "ToolTip": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\CustomerPages\\Create.razor",
-              "RelativeToolTip": "Components\\Pages\\CustomerPages\\Create.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAhAAAAAAAAAA==",
+              "DocumentIndex": 5,
+              "Title": "NavMenu.razor",
+              "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Layout\\NavMenu.razor",
+              "RelativeDocumentMoniker": "Components\\Layout\\NavMenu.razor",
+              "ToolTip": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Layout\\NavMenu.razor",
+              "RelativeToolTip": "Components\\Layout\\NavMenu.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-06T18:26:22.287Z",
+              "WhenOpened": "2025-12-06T18:52:43.8Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MainLayout.razor",
+              "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Layout\\MainLayout.razor",
+              "RelativeDocumentMoniker": "Components\\Layout\\MainLayout.razor",
+              "ToolTip": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Layout\\MainLayout.razor",
+              "RelativeToolTip": "Components\\Layout\\MainLayout.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-06T18:52:41.333Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAEAAAAANDMzMzPrvwIAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-06T18:52:37.517Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "App.razor",
+              "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\App.razor",
+              "RelativeDocumentMoniker": "Components\\App.razor",
+              "ToolTip": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\App.razor",
+              "RelativeToolTip": "Components\\App.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-06T18:52:35.267Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CreateAccount.razor",
+              "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\CreateAccount.razor",
+              "RelativeDocumentMoniker": "Components\\Pages\\CreateAccount.razor",
+              "ToolTip": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\CreateAccount.razor",
+              "RelativeToolTip": "Components\\Pages\\CreateAccount.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-06T18:22:08.608Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "SpaAndBeautyWebsiteContext.cs",
+              "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Data\\SpaAndBeautyWebsiteContext.cs",
+              "RelativeDocumentMoniker": "Data\\SpaAndBeautyWebsiteContext.cs",
+              "ToolTip": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Data\\SpaAndBeautyWebsiteContext.cs",
+              "RelativeToolTip": "Data\\SpaAndBeautyWebsiteContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-06T19:44:02.074Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
               "Title": "Customer.cs",
               "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Models\\Customer.cs",
               "RelativeDocumentMoniker": "Models\\Customer.cs",
@@ -85,7 +174,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 9,
+              "Title": "Create.razor",
+              "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\CustomerPages\\Create.razor",
+              "RelativeDocumentMoniker": "Components\\Pages\\CustomerPages\\Create.razor",
+              "ToolTip": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\CustomerPages\\Create.razor",
+              "RelativeToolTip": "Components\\Pages\\CustomerPages\\Create.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-06T18:26:22.287Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
               "Title": "Error.razor",
               "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\Error.razor",
               "RelativeDocumentMoniker": "Components\\Pages\\Error.razor",
@@ -98,7 +200,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "Home.razor",
               "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\Home.razor",
               "RelativeDocumentMoniker": "Components\\Pages\\Home.razor",
@@ -111,15 +213,15 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "CreateAccount.razor",
-              "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\CreateAccount.razor",
-              "RelativeDocumentMoniker": "Components\\Pages\\CreateAccount.razor",
-              "ToolTip": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\CreateAccount.razor",
-              "RelativeToolTip": "Components\\Pages\\CreateAccount.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 8,
+              "Title": "Index.razor",
+              "DocumentMoniker": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\CustomerPages\\Index.razor",
+              "RelativeDocumentMoniker": "Components\\Pages\\CustomerPages\\Index.razor",
+              "ToolTip": "C:\\Users\\d_rat\\Documents\\SpaAndBeautyWebsite\\Components\\Pages\\CustomerPages\\Index.razor",
+              "RelativeToolTip": "Components\\Pages\\CustomerPages\\Index.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-06T18:22:08.608Z",
+              "WhenOpened": "2025-12-06T18:28:05.853Z",
               "EditorCaption": ""
             }
           ]
