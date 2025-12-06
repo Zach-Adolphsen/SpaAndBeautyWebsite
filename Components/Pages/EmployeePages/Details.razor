@@ -1,0 +1,66 @@
+﻿@page "/employees/details"
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Models
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>Employee</h2>
+    <hr />
+    @if (employee is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">FirstName</dt>
+            <dd class="col-sm-10">@employee.FirstName</dd>
+            <dt class="col-sm-2">LastName</dt>
+            <dd class="col-sm-10">@employee.LastName</dd>
+            <dt class="col-sm-2">PhoneNumber</dt>
+            <dd class="col-sm-10">@employee.PhoneNumber</dd>
+            <dt class="col-sm-2">Email</dt>
+            <dd class="col-sm-10">@employee.Email</dd>
+            <dt class="col-sm-2">Street</dt>
+            <dd class="col-sm-10">@employee.Street</dd>
+            <dt class="col-sm-2">City</dt>
+            <dd class="col-sm-10">@employee.City</dd>
+            <dt class="col-sm-2">State</dt>
+            <dd class="col-sm-10">@employee.State</dd>
+            <dt class="col-sm-2">ZipCode</dt>
+            <dd class="col-sm-10">@employee.ZipCode</dd>
+            <dt class="col-sm-2">JobTitle</dt>
+            <dd class="col-sm-10">@employee.JobTitle</dd>
+            <dt class="col-sm-2">Salary</dt>
+            <dd class="col-sm-10">@employee.Salary</dd>
+            <dt class="col-sm-2">Permission</dt>
+            <dd class="col-sm-10">@employee.Permission</dd>
+        </dl>
+        <div>
+            <a href="@($"/employees/edit?employeeid={employee.EmployeeId}")">Edit</a> |
+            <a href="@($"/employees")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Employee? employee;
+
+    [SupplyParameterFromQuery]
+    private int EmployeeId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        employee = await context.Employee.FirstOrDefaultAsync(m => m.EmployeeId == EmployeeId);
+
+        if (employee is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

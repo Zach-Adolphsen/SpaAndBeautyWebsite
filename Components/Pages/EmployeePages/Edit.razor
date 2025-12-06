@@ -1,0 +1,139 @@
+﻿@page "/employees/edit"
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Models
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Employee</h2>
+<hr />
+@if (Employee is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Employee" OnValidSubmit="UpdateEmployee" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Employee.EmployeeId" value="@Employee.EmployeeId" />
+                <div class="mb-3">
+                    <label for="firstname" class="form-label">FirstName:</label>
+                    <InputText id="firstname" @bind-Value="Employee.FirstName" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Employee.FirstName" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="lastname" class="form-label">LastName:</label>
+                    <InputText id="lastname" @bind-Value="Employee.LastName" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Employee.LastName" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="phonenumber" class="form-label">PhoneNumber:</label>
+                    <InputText id="phonenumber" @bind-Value="Employee.PhoneNumber" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Employee.PhoneNumber" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <InputText id="email" @bind-Value="Employee.Email" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Employee.Email" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="street" class="form-label">Street:</label>
+                    <InputText id="street" @bind-Value="Employee.Street" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Employee.Street" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="city" class="form-label">City:</label>
+                    <InputText id="city" @bind-Value="Employee.City" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Employee.City" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="state" class="form-label">State:</label>
+                    <InputText id="state" @bind-Value="Employee.State" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Employee.State" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="zipcode" class="form-label">ZipCode:</label>
+                    <InputText id="zipcode" @bind-Value="Employee.ZipCode" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Employee.ZipCode" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="jobtitle" class="form-label">JobTitle:</label>
+                    <InputText id="jobtitle" @bind-Value="Employee.JobTitle" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Employee.JobTitle" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="salary" class="form-label">Salary:</label>
+                    <InputNumber id="salary" @bind-Value="Employee.Salary" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Employee.Salary" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="permission" class="form-label">Permission:</label>
+                    <InputText id="permission" @bind-Value="Employee.Permission" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Employee.Permission" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/employees">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int EmployeeId { get; set; }
+
+    [SupplyParameterFromForm]
+    private Employee? Employee { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Employee ??= await context.Employee.FirstOrDefaultAsync(m => m.EmployeeId == EmployeeId);
+
+        if (Employee is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateEmployee()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Employee!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!EmployeeExists(Employee!.EmployeeId))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/employees");
+    }
+
+    private bool EmployeeExists(int employeeid)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Employee.Any(e => e.EmployeeId == employeeid);
+    }
+}

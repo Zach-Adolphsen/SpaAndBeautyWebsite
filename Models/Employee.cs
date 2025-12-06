@@ -48,7 +48,7 @@ namespace SpaAndBeautyWebsite.Models
         public required string ZipCode { get; set; }
 
         [Required]
-        [StringLength(15)]
+        [StringLength(50)]
         public required string JobTitle { get; set; }
 
         [Required]
