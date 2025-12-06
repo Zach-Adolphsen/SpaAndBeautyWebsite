@@ -1,0 +1,154 @@
+﻿@page "/create-account"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Models
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<h1 class="text-center mb-4">Create an Account</h1>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6 mx-auto">
+        <EditForm class="w-100" method="post" Model="Customer" OnValidSubmit="AddCustomer" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+
+            <div class="mb-3 row align-items-center gx-2">
+                <label for="firstname" class="col-auto col-form-label mb-0 pe-2 text-end">First Name:</label>
+                <div class="col">
+                    <div class="d-flex justify-content-end w-100">
+                        <InputText id="firstname" class="form-control account-input" @bind-Value="Customer.FirstName" aria-required="true" />
+                    </div>
+                    <ValidationMessage For="() => Customer.FirstName" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="mb-3 row align-items-center gx-2">
+                <label for="lastname" class="col-auto col-form-label mb-0 pe-2 text-end">Last Name:</label>
+                <div class="col">
+                    <div class="d-flex justify-content-end w-100">
+                        <InputText id="lastname" class="form-control account-input" @bind-Value="Customer.LastName" aria-required="true" />
+                    </div>
+                    <ValidationMessage For="() => Customer.LastName" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="mb-3 row align-items-center gx-2">
+                <label for="username" class="col-auto col-form-label mb-0 pe-2 text-end">Username:</label>
+                <div class="col">
+                    <div class="d-flex justify-content-end w-100">
+                        <InputText id="username" class="form-control account-input" @bind-Value="Customer.Username" aria-required="true" />
+                    </div>
+                    <ValidationMessage For="() => Customer.Username" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="mb-3 row align-items-center gx-2">
+                <label for="password" class="col-auto col-form-label mb-0 pe-2 text-end">Password:</label>
+                <div class="col">
+                    <div class="d-flex justify-content-end w-100">
+                        <InputText id="password" class="form-control account-input" @bind-Value="Customer.Password" type="password" aria-required="true" />
+                    </div>
+                    <ValidationMessage For="() => Customer.Password" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="mb-3 row align-items-center gx-2">
+                <label for="phonenumber" class="col-auto col-form-label mb-0 pe-2 text-end">Phone Number:</label>
+                <div class="col">
+                    <div class="d-flex justify-content-end w-100">
+                        <InputText id="phonenumber" class="form-control account-input" @bind-Value="Customer.PhoneNumber" aria-required="true" />
+                    </div>
+                    <ValidationMessage For="() => Customer.PhoneNumber" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="mb-3 row align-items-center gx-2">
+                <label for="email" class="col-auto col-form-label mb-0 pe-2 text-end">Email:</label>
+                <div class="col">
+                    <div class="d-flex justify-content-end w-100">
+                        <InputText id="email" class="form-control account-input" @bind-Value="Customer.Email" aria-required="true" />
+                    </div>
+                    <ValidationMessage For="() => Customer.Email" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center mt-3">
+                <button type="submit" class="btn btn-primary">Create</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Customer Customer { get; set; } = new Customer
+    {
+        FirstName = string.Empty,
+        LastName = string.Empty,
+        Username = string.Empty,
+        Password = string.Empty,
+        PhoneNumber = string.Empty,
+        Email = string.Empty
+    };
+
+    private bool _sized;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_sized)
+        {
+            // run initial sizing and register resize observer
+            await JS.InvokeVoidAsync("window.accountInputSizer.init", ".account-input");
+            _sized = true;
+        }
+    }
+
+    private async Task AddCustomer()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Customer.Add(Customer);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/");
+    }
+}
+
+<script>
+    // Ensure this runs in the browser and survives multiple navigations.
+    (function () {
+        if (window.accountInputSizer) return;
+
+        window.accountInputSizer = {
+            init: function (selector) {
+                // compute and apply width now
+                window.accountInputSizer.applyMinWidth(selector);
+                // on resize recompute
+                window.addEventListener('resize', function onResize() {
+                    window.accountInputSizer.applyMinWidth(selector);
+                });
+                // optional: observe DOM changes to re-run sizing if inputs change
+                const container = document.querySelector('body');
+                if (container && window.MutationObserver) {
+                    const obs = new MutationObserver(function () {
+                        window.accountInputSizer.applyMinWidth(selector);
+                    });
+                    obs.observe(container, { childList: true, subtree: true, attributes: false });
+                }
+            },
+            applyMinWidth: function (selector) {
+                const inputs = Array.from(document.querySelectorAll(selector));
+                if (!inputs.length) return;
+                // clear any inline width so we measure natural sizes
+                inputs.forEach(i => i.style.width = '');
+                // measure natural widths (use getBoundingClientRect for visual width)
+                const widths = inputs.map(i => i.getBoundingClientRect().width);
+                const min = Math.min.apply(null, widths);
+                // apply the minimum width to every input (use px)
+                inputs.forEach(i => {
+                    i.style.width = min + 'px';
+                });
+            }
+        };
+    })();
+</script>
