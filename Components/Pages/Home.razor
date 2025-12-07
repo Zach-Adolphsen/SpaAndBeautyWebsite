@@ -93,38 +93,26 @@
                     </div>
                 </div>
             }
-            <div class="row mt-5">
-                <div class="col-12 text-center">
-                    @if (visibleReviews < Reviews.Count)
-                    {
-                        <button class="btn btn-outline-dark me-2" @onclick="ShowMore">View More Reviews</button>
-                    }
-                    else
-                    {
-                        <button class="btn btn-outline-dark me-2" @onclick="ShowLess">Show Less</button>
-                    }
-
-                    <a href="reviews/create" class="btn btn-primary">Write a Review</a>
-                </div>
-            </div>
         </div>
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-        <div class="promo-section">
-            <div class="promo-image">
-                <img src="https://images.prestigeonline.com/wp-content/uploads/sites/8/2022/03/01142646/slbk_chi_the_spa_02-1295x900.jpeg" alt="Mother and child on beach">
-            </div>
-            <div class="promo-content">
-                <h3 class="promo-subtitle">Best Rate</h3>
-                <h1 class="promo-title">Guarantee</h1>
-                <p class="promo-text">
-                    Sign up now to book your first appointment at an unbeatable price! Experience luxury spa treatments without breaking the bank. Our best rate guarantee ensures you get the finest services at the most affordable rates. Don't miss out on this exclusive offer to pamper yourself while saving money.
-                </p>
-                <a href="create-account" class="btn btn-primary text-uppercase">Sign Up</a>
+
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                @if (visibleReviews < Reviews.Count)
+                {
+                    <button class="btn btn-outline-dark me-2" @onclick="ShowMore">View More Reviews</button>
+                }
+                else
+                {
+                    <button class="btn btn-outline-dark me-2" @onclick="ShowLess">Show Less</button>
+                }
+
+                <a href="reviews/create" class="btn btn-primary">Write a Review</a>
             </div>
         </div>
     </div>
 </section>
 
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 <style>
     /* ... (Your existing styles here) ... */
     .promo-section {
@@ -210,36 +198,34 @@
             margin: 0 auto 30px auto;
         }
     }
-
-
 </style>
 
+<div class="promo-section">
+    <div class="promo-image">
+        <img src="https://images.prestigeonline.com/wp-content/uploads/sites/8/2022/03/01142646/slbk_chi_the_spa_02-1295x900.jpeg" alt="Mother and child on beach">
+    </div>
+    <div class="promo-content">
+        <h3 class="promo-subtitle">Best Rate</h3>
+        <h1 class="promo-title">Guarantee</h1>
+        <p class="promo-text">
+            Sign up now to book your first appointment at an unbeatable price! Experience luxury spa treatments without breaking the bank. Our best rate guarantee ensures you get the finest services at the most affordable rates. Don't miss out on this exclusive offer to pamper yourself while saving money.
+        </p>
+        <a href="create-account" class="btn btn-primary text-uppercase">Sign Up</a>
+    </div>
+</div>
 
 @code {
-    // 1. Variable to track how many reviews to show. Default is 5.
     private int visibleReviews = 6;
 
-    // 2. Logic to expand the list
-    private void ShowMore()
-    {
-        visibleReviews = Reviews.Count; // Show all
-    }
-
-    // 3. Logic to collapse the list
-    private void ShowLess()
-    {
-        visibleReviews = 6; // Reset to 5
-    }
-
-    // 4. The Data Model for a Review
+    // This is your View Model (Used for display)
     public class ReviewModel
     {
-        public required string Name { get; set; }
-        public required string Comment { get; set; }
+        public string Name { get; set; }
+        public string Comment { get; set; }
         public int Rating { get; set; }
     }
 
-    // 5. The List of 20 Mock Reviews
+    // Initialize with your Mock Data
     private List<ReviewModel> Reviews = new List<ReviewModel>
     {
         new ReviewModel { Name = "Sarah Jenkins", Comment = "The facial was absolutely divine. My skin has never felt this hydrated!", Rating = 10 },
@@ -252,7 +238,51 @@
         new ReviewModel { Name = "John Doe", Comment = "Good experience, but the waiting room was a bit cold.", Rating = 7 },
         new ReviewModel { Name = "Emily Blunt", Comment = "The Swedish massage put me right to sleep. So relaxing.", Rating = 10 },
         new ReviewModel { Name = "Chris Evans", Comment = "Took my mom here for her birthday. She loved the pedicure service.", Rating = 10 },
-       new ReviewModel { Name = "Jordan Lee", Comment = "I have to say, the website design is excellent. It was incredibly easy to navigate and booking my appointment was seamless. Great user experience!", Rating = 10}
+        new ReviewModel { Name = "Jordan Lee", Comment = "I have to say, the website design is excellent. It was incredibly easy to navigate and booking my appointment was seamless. Great user experience!", Rating = 10}
     };
-}
 
+    // THIS IS THE NEW PART: Loading Real Data
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        // 1. Fetch real reviews from DB, including the Customer info
+        var realReviews = await context.Review
+            //.Include(r => r.Customer) // <-- Remove or comment out this line
+            .OrderByDescending(r => r.ReviewId) // Get newest first
+            .ToListAsync();
+
+        // 2. Loop through real reviews and add them to the top of the list
+        // Note: We iterate backwards so when we Insert(0), the newest stays at top
+        foreach (var r in ((IEnumerable<Review>)realReviews).Reverse())
+        {
+            var displayModel = new ReviewModel
+            {
+                // Logic: If FirstName/LastName properties exist on Review, use them; otherwise, use "Guest"
+                Name = !string.IsNullOrEmpty(r.GetType().GetProperty("FirstName")?.GetValue(r)?.ToString()) && 
+                       !string.IsNullOrEmpty(r.GetType().GetProperty("LastName")?.GetValue(r)?.ToString())
+                    ? $"{r.GetType().GetProperty("FirstName")?.GetValue(r)} {r.GetType().GetProperty("LastName")?.GetValue(r)}"
+                    : "Guest",
+
+                // Logic: Map DB 'Description' to UI 'Comment'
+                Comment = r.Description,
+
+                // Logic: Pass the rating
+                Rating = r.Rating
+            };
+
+            // Add to the VERY TOP of the list so you see them immediately
+            Reviews.Insert(0, displayModel);
+        }
+    }
+
+    private void ShowMore()
+    {
+        visibleReviews = Reviews.Count;
+    }
+
+    private void ShowLess()
+    {
+        visibleReviews = 6;
+    }
+}
