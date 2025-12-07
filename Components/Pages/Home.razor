@@ -121,7 +121,7 @@
                     <button class="btn btn-outline-dark me-2" @onclick="ShowLess">Show Less</button>
                 }
 
-                <a href="write-review" class="btn btn-primary">Write a Review</a>
+                <a href="reviews/create" class="btn btn-primary">Write a Review</a>
             </div>
         </div>
 
@@ -178,3 +178,117 @@
        new ReviewModel { Name = "Jordan Lee", Comment = "I have to say, the website design is excellent. It was incredibly easy to navigate and booking my appointment was seamless. Great user experience!", Rating = 10}
     };
 }
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+    /* Main Container */
+    .promo-section {
+        display: flex; /* Puts image and text side-by-side */
+        flex-wrap: wrap; /* Allows stacking on small screens */
+        background: linear-gradient(135deg, #f0f9fa 0%, #e6f7f8 100%); /* Subtle water-like background */
+        font-family: 'Lato', sans-serif;
+        color: #333;
+        max-width: 1200px;
+        margin: 0 auto;
+        align-items: center; /* Vertically centers the content */
+    }
+
+    /* Left Side: Image */
+    .promo-image {
+        flex: 1 1 500px; /* Takes up half space, but at least 500px wide */
+    }
+
+        .promo-image img {
+            width: 100%;
+            height: auto;
+            display: block; /* Removes bottom gap */
+            object-fit: cover;
+        }
+
+    /* Right Side: Text Content */
+    .promo-content {
+        flex: 1 1 400px;
+        padding: 40px 60px;
+        text-align: left; /* Default text alignment */
+    }
+
+    /* Typography Styling */
+    .promo-subtitle {
+        font-family: 'Playfair Display', serif;
+        color: #136F7B; /* The Teal Color */
+        font-size: 2rem;
+        letter-spacing: 2px;
+        margin-bottom: 0;
+        text-transform: uppercase;
+    }
+
+    .promo-title {
+        font-family: 'Playfair Display', serif;
+        color: #0F2540; /* The Navy Color */
+        font-size: 3rem;
+        letter-spacing: 3px;
+        margin-top: 0;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        font-weight: 400;
+    }
+
+    .promo-text {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #4a4a4a;
+        margin-bottom: 30px;
+        max-width: 90%;
+    }
+
+    /* Button Styling */
+    .btn-signup {
+        background-color: #136F7B; /* Matches the subtitle */
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        letter-spacing: 2px;
+        cursor: pointer;
+        text-transform: uppercase;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-signup:hover {
+            background-color: #0e525b; /* Slightly darker on hover */
+        }
+
+    /* Mobile Responsiveness */
+    @@media (max-width: 768px) {
+        .promo-content
+
+    {
+        padding: 30px 20px;
+        text-align: center;
+    }
+
+    .promo-text {
+        margin: 0 auto 30px auto; /* Centers paragraph on mobile */
+    }
+
+    }
+</style>
+
+<div class="promo-section">
+    <div class="promo-image">
+        <img src="https://images.prestigeonline.com/wp-content/uploads/sites/8/2022/03/01142646/slbk_chi_the_spa_02-1295x900.jpeg" alt="Mother and child on beach">
+    </div>
+
+    <div class="promo-content">
+        <h3 class="promo-subtitle">Best Rate</h3>
+        <h1 class="promo-title">Guarantee</h1>
+
+        <p class="promo-text">
+            Sign up now to book your first appointment at an unbeatable price! Experience luxury spa treatments without breaking the bank. Our best rate guarantee ensures you get the finest services at the most affordable rates. Don't miss out on this exclusive offer to pamper yourself while saving money.
+        </p>
+
+        <a href="create-account" class="btn btn-primary text-uppercase">Sign Up</a>
+    </div>
+</div>

@@ -8,36 +8,72 @@
 
 <PageTitle>Index</PageTitle>
 
-<h1>Index</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Appointments</h1>
+    <a href="appointments/create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Create New
+    </a>
+</div>
 
-<p>
-    <a href="appointments/create">Create New</a>
-</p>
-
-@* We bind to 'items', which allows us to show "Unknown" instead of hiding the row *@
-<QuickGrid Class="table" Items="items">
+<QuickGrid Class="table table-striped table-hover table-bordered align-middle"
+           Items="items"
+           RowClass="@GetRowClass">
 
     <PropertyColumn Property="@(p => p.EmployeeName)" Title="Employee" Sortable="true" />
     <PropertyColumn Property="@(p => p.CustomerName)" Title="Customer" Sortable="true" />
     <PropertyColumn Property="@(p => p.ServiceName)" Title="Service" Sortable="true" />
+    <PropertyColumn Property="@(p => p.ScheduledDateTime)" Title="Date & Time" Format="g" Sortable="true" />
+    <PropertyColumn Property="@(p => p.DurationMinutes)" Title="Duration (m)" Sortable="true" Class="text-center" />
 
-    <PropertyColumn Property="@(p => p.ScheduledDateTime)" Title="Scheduled Date" Format="g" Sortable="true" />
-    <PropertyColumn Property="@(p => p.DurationMinutes)" Title="Duration" Sortable="true" />
-    <PropertyColumn Property="@(p => p.Status)" Title="Status" Sortable="true" />
-
-    <TemplateColumn Context="p">
-        @* Note: We use p.AppointmentId here because 'p' is our custom ViewModel *@
-        <a href="@($"appointments/edit?appointmentid={p.AppointmentId}")">Edit</a> |
-        <a href="@($"appointments/details?appointmentid={p.AppointmentId}")">Details</a> |
-        <a href="@($"appointments/delete?appointmentid={p.AppointmentId}")">Delete</a>
+    <TemplateColumn Title="Status" Sortable="true">
+        @switch (context.Status)
+        {
+            case "Completed":
+                <span class="badge bg-success">Completed</span>
+                break;
+            case "No Show":
+                <span class="badge bg-danger">No Show</span>
+                break;
+            case "Checked In":
+                <span class="badge bg-info text-dark">Checked In</span>
+                break;
+            case "In Progress":
+                <span class="badge bg-warning text-dark">In Progress</span>
+                break;
+            default:
+                <span class="badge bg-primary">@context.Status</span>
+                break;
+        }
     </TemplateColumn>
+
+    <TemplateColumn Title="Actions">
+        <div class="d-flex gap-2">
+            @if (context.Status != "Completed" && context.Status != "No Show" && context.Status != "Cancelled")
+            {
+                <a href="@($"appointments/edit?appointmentid={context.AppointmentId}")" class="btn btn-sm btn-outline-primary">
+                    Edit
+                </a>
+                <a href="@($"appointments/delete?appointmentid={context.AppointmentId}")" class="btn btn-sm btn-outline-danger">
+                    Delete
+                </a>
+            }
+        </div>
+    </TemplateColumn>
+
 </QuickGrid>
 
 @code {
     private SpaAndBeautyWebsiteContext context = default!;
-
-    // Use IQueryable of our custom class so QuickGrid can sort/filter automatically
     private IQueryable<AppointmentViewModel> items = default!;
+
+    private string GetRowClass(AppointmentViewModel appointment)
+    {
+        if (appointment.Status == "Completed" || appointment.Status == "No Show" || appointment.Status == "Cancelled")
+        {
+            return "row-inactive";
+        }
+        return "";
+    }
 
     public class AppointmentViewModel
     {
@@ -54,39 +90,34 @@
     {
         context = DbFactory.CreateDbContext();
 
-        // THIS IS THE FIX: Using "Left Joins" (DefaultIfEmpty)
-        // This ensures the appointment shows up even if IDs are 0 or invalid.
+        var query = from a in context.Appointment
+            join e in context.Employee on a.EmployeeId equals e.EmployeeId into eGroup
+            from e in eGroup.DefaultIfEmpty()
+            join c in context.Customer on a.CustomerId equals c.CustomerId into cGroup
+            from c in cGroup.DefaultIfEmpty()
+            join s in context.Service on a.ServiceId equals s.ServiceId into sGroup
+            from s in sGroup.DefaultIfEmpty()
+            select new AppointmentViewModel
+            {
+                AppointmentId = a.AppointmentId,
+                EmployeeName = e != null ? e.FirstName + " " + e.LastName : "Unknown Employee",
+                CustomerName = c != null ? c.FirstName + " " + c.LastName : "Unknown Customer",
+                ServiceName = s != null ? s.Name : "Unknown Service",
+                ScheduledDateTime = a.ScheduledDateTime,
+                DurationMinutes = a.DurationMinutes,
+                Status = a.Status
+            };
 
-        items = from a in context.Appointment
-
-                    // Join Employee (Safe)
-                join e in context.Employee on a.EmployeeId equals e.EmployeeId into eGroup
-                from e in eGroup.DefaultIfEmpty()
-
-                    // Join Customer (Safe)
-                join c in context.Customer on a.CustomerId equals c.CustomerId into cGroup
-                from c in cGroup.DefaultIfEmpty()
-
-                    // Join Service (Safe)
-                join s in context.Service on a.ServiceId equals s.ServiceId into sGroup
-                from s in sGroup.DefaultIfEmpty()
-
-                select new AppointmentViewModel
-                {
-                    AppointmentId = a.AppointmentId,
-                    // If 'e' is null (no match), use "Unknown"
-                    EmployeeName = e != null ? e.FirstName + " " + e.LastName : "Unknown Employee",
-
-                    // If 'c' is null (no match), use "Unknown"
-                    CustomerName = c != null ? c.FirstName + " " + c.LastName : "Unknown Customer",
-
-                    // If 's' is null (no match), use "Unknown"
-                    ServiceName = s != null ? s.Name : "Unknown Service",
-
-                    ScheduledDateTime = a.ScheduledDateTime,
-                    DurationMinutes = a.DurationMinutes,
-                    Status = a.Status
-                };
+        // Apply the Custom Sort:
+        // 1. Sort by Status using your specific weighting
+        // 2. Then sort by Date & Time for items within the same status
+        items = query
+            .OrderBy(x => x.Status == "Scheduled" ? 1 :
+                x.Status == "Checked In" ? 2 :
+                x.Status == "In Progress" ? 3 :
+                x.Status == "Completed" ? 4 :
+                5) // Rank 5 covers "No Show", "Cancelled", etc.
+            .ThenBy(x => x.ScheduledDateTime);
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

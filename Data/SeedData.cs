@@ -198,28 +198,7 @@ public class SeedData
             );
         }
 
-        // Seed reviews
-        if (context.Review != null)
-        {
-            context.Review.AddRange(
-                new Review
-                {
-                    EmployeeId = 1,
-                    CustomerId = savedCustomers[2].CustomerId,
-                    ServiceId = savedServices.First(s => s.Name == "Signature Facial").ServiceId,
-                    Description = "Very relaxing facial, skin felt great afterwards.",
-                    Rating = 9
-                },
-                new Review
-                {
-                    EmployeeId = 3,
-                    CustomerId = savedCustomers[1].CustomerId,
-                    ServiceId = savedServices.First(s => s.Name == "Swedish Massage").ServiceId,
-                    Description = "Excellent massage, very professional.",
-                    Rating = 10
-                }
-            );
-        }
+       
 
         context.SaveChanges();
     }
