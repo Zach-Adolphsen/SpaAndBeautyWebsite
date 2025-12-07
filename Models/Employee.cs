@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SpaAndBeautyWebsite.Models
@@ -28,6 +29,11 @@ namespace SpaAndBeautyWebsite.Models
         [StringLength(50)]
         [EmailAddress]
         public required string Email { get; set; }
+
+        [Required] 
+        [StringLength(20)]
+        [PasswordPropertyText]
+        public required string Password { get; set; }
 
         [Required]
         [StringLength(30)]

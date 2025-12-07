@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SpaAndBeautyWebsite.Data;
 
@@ -11,9 +12,11 @@ using SpaAndBeautyWebsite.Data;
 namespace SpaAndBeautyWebsite.Migrations
 {
     [DbContext(typeof(SpaAndBeautyWebsiteContext))]
-    partial class SpaAndBeautyWebsiteContextModelSnapshot : ModelSnapshot
+    [Migration("20251207185134_AddPasswordToEmployee")]
+    partial class AddPasswordToEmployee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
