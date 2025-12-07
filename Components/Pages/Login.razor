@@ -48,7 +48,7 @@
     {
         InvalidMessage = null;
         var username = Model.Username.Trim();
-        var password = Model.Password; // don't trim password unless you intend to
+        var password = Model.Password;
 
         using var context = DbFactory.CreateDbContext();
 
@@ -73,14 +73,6 @@
 
             var signinUrl = $"/signin-local?username={Uri.EscapeDataString(employee.Username)}&id={employee.EmployeeId}&role={Uri.EscapeDataString(role)}&returnUrl=/";
             NavigationManager.NavigateTo(signinUrl, forceLoad: true);
-            return;
-        }
-
-        // Optional debug: show whether username exists at all (remove in production)
-        if (!await context.Employee.AnyAsync(e => e.Username.ToLower() == username.ToLower())
-            && !await context.Customer.AnyAsync(c => c.Username.ToLower() == username.ToLower()))
-        {
-            InvalidMessage = "No account found with that username.";
             return;
         }
 

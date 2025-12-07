@@ -28,7 +28,7 @@ public class SeedData
                     FirstName = "Sofia",
                     LastName = "Andersson",
                     Username = "sofia.andersson",
-                    Password = "SofiaPass1!",
+                    Password = "sand123", // Keep only one Password assignment
                     PhoneNumber = "+1-111-222-3333",
                     Email = "sofia.andersson@example.com",
                     Street = "123 Main St",
@@ -44,7 +44,7 @@ public class SeedData
                     FirstName = "Lucas",
                     LastName = "Martinez",
                     Username = "lucas.martinez",
-                    Password = "LucasPass1!",
+                    Password = "lmartinez!", // Keep only one Password assignment
                     PhoneNumber = "+1-222-333-4444",
                     Email = "lucas.martinez@example.com",
                     Street = "456 Oak Ave",
@@ -60,7 +60,7 @@ public class SeedData
                     FirstName = "Emma",
                     LastName = "Nguyen",
                     Username = "emma.nguyen",
-                    Password = "EmmaPass1!",
+                    Password = "emmanailtech", // Keep only one Password assignment
                     PhoneNumber = "+1-333-444-5555",
                     Email = "emma.nguyen@example.com",
                     Street = "789 Pine Rd",

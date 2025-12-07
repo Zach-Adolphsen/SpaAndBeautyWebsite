@@ -1,7 +1,180 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+<section class="offers-section py-5">
+    <div class="container">
 
-<h1>Hello, world!</h1>
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title text-uppercase">Services</h2>
+                <div class="title-divider mx-auto"></div>
+                <p class="text-muted mt-3">Get poked by needles with our premium homeless package! Come to Pleasant Park, where luxury meets affordability!</p>
+            </div>
+        </div>
 
-Welcome to your new app.
+        <div class="row g-4">
+
+            <div class="col-md-6">
+                <div class="card h-100 border-opacity-25 shadow-sm offer-card">
+                    
+                    <div class="card-body text-center d-flex flex-column">
+                        <h5 class="card-title">Manicure & Pedicure</h5>
+                        <p class="card-text text-muted flex-grow-1">
+                            Complete hand and foot care with polish and massage.
+                        </p>
+                        <div class="mt-3">
+                            <a href="services" class="btn btn-outline-primary text-uppercase me-2">View Services</a>
+                            <a href="appointments/create" class="btn btn-primary text-uppercase">Book Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 border-opacity-25 shadow-sm offer-card">
+                    
+                    <div class="card-body text-center d-flex flex-column">
+                        <h5 class="card-title">Signature Facial</h5>
+                        <p class="card-text text-muted flex-grow-1">
+                            Custom facial treatment to cleanse, exfoliate and hydrate skin.
+                        </p>
+                        <div class="mt-3">
+                            <a href="services" class="btn btn-outline-primary text-uppercase me-2">View Services</a>
+                            <button class="btn btn-primary text-uppercase">Book Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 border-opacity-25 shadow-sm offer-card">
+                    
+                    <div class="card-body text-center d-flex flex-column">
+                        <h5 class="card-title">Deep Tissue Massage</h5>
+                        <p class="card-text text-muted flex-grow-1">
+                            Focused massage to release chronic muscle tension and knots.
+                        </p>
+                        <div class="mt-3">
+                            <a href="services" class="btn btn-outline-primary text-uppercase me-2">View Services</a>
+                            <button class="btn btn-primary text-uppercase">Book Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 border-opacity-25 shadow-sm offer-card">
+                   
+                    <div class="card-body text-center d-flex flex-column">
+                        <h5 class="card-title">Swedish Massage</h5>
+                        <p class="card-text text-muted flex-grow-1">
+                            A gentle, relaxing full-body massage using long strokes to relieve tension.
+                        </p>
+                        <div class="mt-3">
+                            <a href="services" class="btn btn-outline-primary text-uppercase me-2">View Services</a>
+                            <button class="btn btn-primary text-uppercase">Book Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="reviews-section py-5 bg-light">
+    <div class="container">
+
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title text-uppercase">Customer Reviews</h2>
+                <div class="title-divider mx-auto"></div>
+                <p class="text-muted mt-3">See what our relaxed guests are saying about their stay.</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var review in Reviews.Take(visibleReviews))
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="card-title fw-bold mb-0">@review.Name</h6>
+                                <span class="badge bg-success">@review.Rating/10</span>
+                            </div>
+                            <p class="card-text text-muted fst-italic">"@review.Comment"</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                @if (visibleReviews < Reviews.Count)
+                {
+                    <button class="btn btn-outline-dark me-2" @onclick="ShowMore">View More Reviews</button>
+                }
+                else
+                {
+                    <button class="btn btn-outline-dark me-2" @onclick="ShowLess">Show Less</button>
+                }
+
+                <a href="write-review" class="btn btn-primary">Write a Review</a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+@code {
+    // 1. Variable to track how many reviews to show. Default is 5.
+    private int visibleReviews = 6;
+
+    // 2. Logic to expand the list
+    private void ShowMore()
+    {
+        visibleReviews = Reviews.Count; // Show all
+    }
+
+    // 3. Logic to collapse the list
+    private void ShowLess()
+    {
+        visibleReviews = 6; // Reset to 5
+    }
+
+    // 4. The Data Model for a Review
+    public class ReviewModel
+    {
+        public required string Name { get; set; }
+        public required string Comment { get; set; }
+        public int Rating { get; set; }
+    }
+
+    // 5. The List of 20 Mock Reviews
+    private List<ReviewModel> Reviews = new List<ReviewModel>
+    {
+        new ReviewModel { Name = "Sarah Jenkins", Comment = "The facial was absolutely divine. My skin has never felt this hydrated!", Rating = 10 },
+        new ReviewModel { Name = "Mike Ross", Comment = "Great prices for the deep tissue massage. Really worked out my back knots.", Rating = 9 },
+        new ReviewModel { Name = "Jessica Pearson", Comment = "Luxury atmosphere without the insane price tag. The 'Homeless Package' is actually a steal.", Rating = 10 },
+        new ReviewModel { Name = "Louis Litt", Comment = "Mud bath was exceptional. The staff treated me like royalty.", Rating = 10 },
+        new ReviewModel { Name = "Donna Paulsen", Comment = "I knew everything about this place before I walked in, but I was still impressed.", Rating = 10 },
+        new ReviewModel { Name = "Harvey Specter", Comment = "Efficient service. I was in and out, feeling recharged. 10/10.", Rating = 10 },
+        new ReviewModel { Name = "Rachel Zane", Comment = "Loved the manicure! The polish lasted for weeks.", Rating = 9 },
+        new ReviewModel { Name = "John Doe", Comment = "Good experience, but the waiting room was a bit cold.", Rating = 7 },
+        new ReviewModel { Name = "Emily Blunt", Comment = "The Swedish massage put me right to sleep. So relaxing.", Rating = 10 },
+        new ReviewModel { Name = "Chris Evans", Comment = "Took my mom here for her birthday. She loved the pedicure service.", Rating = 10 },
+        new ReviewModel { Name = "Tom Holland", Comment = "Never had a facial before, but now I'm hooked. My skin is glowing.", Rating = 9 },
+        new ReviewModel { Name = "Zendaya", Comment = "Estheticians here really know their stuff. Highly recommend.", Rating = 10 },
+        new ReviewModel { Name = "Tony Stark", Comment = "Technology in the spa is a bit dated, but the massage was top tier.", Rating = 8 },
+        new ReviewModel { Name = "Steve Rogers", Comment = "Very polite staff and clean facilities. Good value.", Rating = 10 },
+        new ReviewModel { Name = "Natasha Romanoff", Comment = "Deep tissue massage was intense but exactly what I needed after training.", Rating = 9 },
+        new ReviewModel { Name = "Bruce Banner", Comment = "Helped me manage my stress levels. I feel much calmer now.", Rating = 10 },
+        new ReviewModel { Name = "Clint Barton", Comment = "My shoulder feels 100% better. The therapists are precise.", Rating = 9 },
+        new ReviewModel { Name = "Wanda Maximoff", Comment = "Magical experience. The aromatherapy add-on is a must.", Rating = 10 },
+        new ReviewModel { Name = "Vision", Comment = "A logical choice for relaxation. The pricing model is efficient.", Rating = 9 },
+        new ReviewModel { Name = "Peter Parker", Comment = "Affordable for a student! Really nice break from studying.", Rating = 10 },
+       new ReviewModel { Name = "Jordan Lee", Comment = "I have to say, the website design is excellent. It was incredibly easy to navigate and booking my appointment was seamless. Great user experience!", Rating = 10}
+    };
+}
