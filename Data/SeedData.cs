@@ -27,6 +27,8 @@ public class SeedData
                 {
                     FirstName = "Sofia",
                     LastName = "Andersson",
+                    Username = "sofia.andersson",
+                    Password = "SofiaPass1!",
                     PhoneNumber = "+1-111-222-3333",
                     Email = "sofia.andersson@example.com",
                     Street = "123 Main St",
@@ -41,6 +43,8 @@ public class SeedData
                 {
                     FirstName = "Lucas",
                     LastName = "Martinez",
+                    Username = "lucas.martinez",
+                    Password = "LucasPass1!",
                     PhoneNumber = "+1-222-333-4444",
                     Email = "lucas.martinez@example.com",
                     Street = "456 Oak Ave",
@@ -49,12 +53,14 @@ public class SeedData
                     ZipCode = "627-111-2222",
                     JobTitle = "Esthetician",
                     Salary = 50000m,
-                    Permission = "Staff"
+                    Permission = "Manager"
                 },
                 new Employee
                 {
                     FirstName = "Emma",
                     LastName = "Nguyen",
+                    Username = "emma.nguyen",
+                    Password = "EmmaPass1!",
                     PhoneNumber = "+1-333-444-5555",
                     Email = "emma.nguyen@example.com",
                     Street = "789 Pine Rd",
@@ -63,7 +69,7 @@ public class SeedData
                     ZipCode = "627-222-3333",
                     JobTitle = "Nail Technician",
                     Salary = 48000m,
-                    Permission = "Staff"
+                    Permission = "Admin"
                 }
             );
 

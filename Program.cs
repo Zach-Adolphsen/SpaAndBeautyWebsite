@@ -74,6 +74,7 @@ app.MapGet("/signin-local", async (HttpContext httpContext) =>
     var q = httpContext.Request.Query;
     var username = q["username"].FirstOrDefault();
     var id = q["id"].FirstOrDefault();
+    var role = q["role"].FirstOrDefault() ?? "Customer";
     var returnUrl = q["returnUrl"].FirstOrDefault() ?? "/";
 
     if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(id))
@@ -81,11 +82,17 @@ app.MapGet("/signin-local", async (HttpContext httpContext) =>
         return Results.BadRequest("username and id required");
     }
 
+    var allowedRoles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Customer", "Staff", "Manager", "Admin" };
+    if (!allowedRoles.Contains(role))
+    {
+        return Results.BadRequest("invalid role");
+    }
+
     var claims = new List<Claim>
     {
         new Claim(ClaimTypes.Name, username),
         new Claim(ClaimTypes.NameIdentifier, id),
-        new Claim(ClaimTypes.Role, "Customer")
+        new Claim(ClaimTypes.Role, role)
     };
 
     var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
