@@ -3,10 +3,17 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using SpaAndBeautyWebsite.Models
 @using SpaAndBeautyWebsite.Data
+@using Microsoft.AspNetCore.Components.Authorization
 @implements IAsyncDisposable
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Index</PageTitle>
+
+<div class="alert alert-info">
+    <h4>Debug Info</h4>
+    <pre>@DebugText</pre>
+</div>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Appointments</h1>
@@ -65,6 +72,7 @@
 @code {
     private SpaAndBeautyWebsiteContext context = default!;
     private IQueryable<AppointmentViewModel> items = default!;
+    private string DebugText = "Initializing...";
 
     private string GetRowClass(AppointmentViewModel appointment)
     {
@@ -86,38 +94,99 @@
         public string? Status { get; set; }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
 
-        var query = from a in context.Appointment
-            join e in context.Employee on a.EmployeeId equals e.EmployeeId into eGroup
-            from e in eGroup.DefaultIfEmpty()
-            join c in context.Customer on a.CustomerId equals c.CustomerId into cGroup
-            from c in cGroup.DefaultIfEmpty()
-            join s in context.Service on a.ServiceId equals s.ServiceId into sGroup
-            from s in sGroup.DefaultIfEmpty()
-            select new AppointmentViewModel
-            {
-                AppointmentId = a.AppointmentId,
-                EmployeeName = e != null ? e.FirstName + " " + e.LastName : "Unknown Employee",
-                CustomerName = c != null ? c.FirstName + " " + c.LastName : "Unknown Customer",
-                ServiceName = s != null ? s.Name : "Unknown Service",
-                ScheduledDateTime = a.ScheduledDateTime,
-                DurationMinutes = a.DurationMinutes,
-                Status = a.Status
-            };
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var currentUsername = user.Identity?.Name ?? "";
 
-        // Apply the Custom Sort:
-        // 1. Sort by Status using your specific weighting
-        // 2. Then sort by Date & Time for items within the same status
+        DebugText = $"User: {currentUsername} | IsAuth: {user.Identity?.IsAuthenticated}\n";
+
+        // FAIL-SAFE: Default to showing NOTHING.
+        IQueryable<Appointment> appointmentBaseQuery = context.Appointment.Where(a => false);
+
+        if (user.Identity is not null && user.Identity.IsAuthenticated)
+        {
+            // 1. Admin and Manager get FULL access (See everything)
+            if (user.IsInRole("Admin") || user.IsInRole("Manager"))
+            {
+                DebugText += "Role: Admin or Manager detected (Access Granted: All Records)\n";
+                appointmentBaseQuery = context.Appointment;
+            }
+            // 2. Staff get RESTRICTED access (See only their own)
+            else if (user.IsInRole("Staff"))
+            {
+                DebugText += "Role: Staff detected.\n";
+                // Look up the specific Staff member in the Employee table
+                var currentEmployee = await context.Employee
+                    .FirstOrDefaultAsync(e => e.Username == currentUsername);
+
+                if (currentEmployee != null)
+                {
+                    DebugText += $"Found Staff ID: {currentEmployee.EmployeeId}\n";
+                    appointmentBaseQuery = context.Appointment
+                        .Where(a => a.EmployeeId == currentEmployee.EmployeeId);
+                }
+                else
+                {
+                    DebugText += $"ERROR: Database lookup failed. No Employee record found for username '{currentUsername}'\n";
+                }
+            }
+            // 3. Customers get RESTRICTED access (See only their own)
+            else if (user.IsInRole("Customer"))
+            {
+                DebugText += "Role: Customer detected.\n";
+                var currentCustomer = await context.Customer
+                    .FirstOrDefaultAsync(c => c.Username == currentUsername);
+
+                if (currentCustomer != null)
+                {
+                    DebugText += $"Found Customer ID: {currentCustomer.CustomerId}\n";
+                    appointmentBaseQuery = context.Appointment
+                        .Where(a => a.CustomerId == currentCustomer.CustomerId);
+                }
+                else
+                {
+                    DebugText += $"ERROR: Database lookup failed. No Customer record found for username '{currentUsername}'\n";
+                }
+            }
+            else
+            {
+                DebugText += "ERROR: User is logged in but has no recognized Role (Admin/Manager/Staff/Customer).\n";
+            }
+        }
+
+        // Run the final query
+        var query = from a in appointmentBaseQuery
+                    join e in context.Employee on a.EmployeeId equals e.EmployeeId into eGroup
+                    from e in eGroup.DefaultIfEmpty()
+                    join c in context.Customer on a.CustomerId equals c.CustomerId into cGroup
+                    from c in cGroup.DefaultIfEmpty()
+                    join s in context.Service on a.ServiceId equals s.ServiceId into sGroup
+                    from s in sGroup.DefaultIfEmpty()
+                    select new AppointmentViewModel
+                    {
+                        AppointmentId = a.AppointmentId,
+                        EmployeeName = e != null ? e.FirstName + " " + e.LastName : "Unknown Employee",
+                        CustomerName = c != null ? c.FirstName + " " + c.LastName : "Unknown Customer",
+                        ServiceName = s != null ? s.Name : "Unknown Service",
+                        ScheduledDateTime = a.ScheduledDateTime,
+                        DurationMinutes = a.DurationMinutes,
+                        Status = a.Status
+                    };
+
         items = query
             .OrderBy(x => x.Status == "Scheduled" ? 1 :
                 x.Status == "Checked In" ? 2 :
                 x.Status == "In Progress" ? 3 :
                 x.Status == "Completed" ? 4 :
-                5) // Rank 5 covers "No Show", "Cancelled", etc.
+                5)
             .ThenBy(x => x.ScheduledDateTime);
+
+        var count = await items.CountAsync();
+        DebugText += $"Final Result: Showing {count} appointments.";
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

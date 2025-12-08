@@ -1,9 +1,12 @@
 ﻿@page "/appointments/create"
 @rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Authorization
 @using SpaAndBeautyWebsite.Models
+@using SpaAndBeautyWebsite.Data
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Create Appointment</PageTitle>
 
@@ -15,6 +18,20 @@
         <EditForm Model="Appointment" OnValidSubmit="AddAppointment" FormName="create">
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
+
+            @if (IsAdminOrEmployee)
+            {
+                <div class="mb-3">
+                    <label for="customerid" class="form-label">Customer (Admin/Employee View):</label>
+                    <InputSelect id="customerid" @bind-Value="Appointment.CustomerId" class="form-control">
+                        <option value="0">-- Select Customer --</option>
+                        @foreach (var customer in CustomersList)
+                        {
+                            <option value="@customer.CustomerId">@customer.FirstName @customer.LastName (@customer.Username)</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
 
             <div class="mb-3">
                 <label for="scheduleddate" class="form-label">Date:</label>
@@ -102,21 +119,52 @@
 
     private List<Employee> Employees { get; set; } = new();
     private List<Service> Services { get; set; } = new();
+    private List<Customer> CustomersList { get; set; } = new(); // For Admin selection
     private List<TimeSpan> AvailableTimes { get; set; } = new();
     private DateTime SelectedDate { get; set; } = DateTime.Today;
     private int SelectedEmployeeId { get; set; }
     private int SelectedServiceId { get; set; }
     private TimeSpan? SelectedTime { get; set; }
 
+    // Auth Variables
+    private int? LoggedInCustomerId;
+    private bool IsAdminOrEmployee = false;
+
     private Service? SelectedService => Services.FirstOrDefault(s => s.ServiceId == SelectedServiceId);
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
+
+        // 1. Determine who is logged in
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var username = user.Identity?.Name ?? "";
+
+        if (user.IsInRole("Customer"))
+        {
+            // Find the Customer ID for the logged-in user
+            var currentCustomer = await context.Customer
+                .FirstOrDefaultAsync(c => c.Username == username);
+
+            if (currentCustomer != null)
+            {
+                LoggedInCustomerId = currentCustomer.CustomerId;
+            }
+        }
+        else if (user.IsInRole("Employee") || user.IsInRole("Admin"))
+        {
+            IsAdminOrEmployee = true;
+            // Employees need to be able to select a customer from a list
+            CustomersList = await context.Customer.OrderBy(c => c.LastName).ToListAsync();
+        }
+
+        // 2. Load form data
         Employees = await context.Employee
             .OrderBy(e => e.FirstName)
             .ThenBy(e => e.LastName)
             .ToListAsync();
+
         Services = await context.Service
             .OrderBy(s => s.Name)
             .ToListAsync();
@@ -124,17 +172,14 @@
 
     private async Task LoadAvailableTimesAsync()
     {
-        // Clear previous selections
         AvailableTimes.Clear();
         SelectedTime = null;
 
-        // Only proceed if all required fields are selected
         if (SelectedEmployeeId <= 0 || SelectedServiceId <= 0 || SelectedService == null)
         {
             return;
         }
 
-        // FIX: Update model immediately so validation passes
         Appointment.EmployeeId = SelectedEmployeeId;
         Appointment.ServiceId = SelectedServiceId;
         Appointment.DurationMinutes = SelectedService.DurationMinutes;
@@ -143,20 +188,17 @@
         var start = new TimeSpan(9, 0, 0);
         var end = new TimeSpan(17, 0, 0);
 
-        // Generate all possible 30-minute time slots
         var allSlots = new List<TimeSpan>();
         for (var time = start; time.Add(TimeSpan.FromMinutes(duration)) <= end; time = time.Add(TimeSpan.FromMinutes(30)))
         {
             allSlots.Add(time);
         }
 
-        // Get existing appointments for this employee on the selected date
         using var context = DbFactory.CreateDbContext();
         var existingAppointments = await context.Appointment
             .Where(a => a.EmployeeId == SelectedEmployeeId && a.ScheduledDateTime.Date == SelectedDate.Date)
             .ToListAsync();
 
-        // Filter out conflicting time slots
         AvailableTimes = allSlots.Where(slot =>
         {
             var slotEnd = slot.Add(TimeSpan.FromMinutes(duration));
@@ -164,12 +206,10 @@
             {
                 var apptStart = appt.ScheduledDateTime.TimeOfDay;
                 var apptEnd = apptStart.Add(TimeSpan.FromMinutes(appt.DurationMinutes));
-                // Check for overlap: slot starts before appointment ends AND slot ends after appointment starts
                 return slot < apptEnd && slotEnd > apptStart;
             });
         }).ToList();
 
-        // Force UI to refresh to show the new dropdown
         StateHasChanged();
     }
 
@@ -178,10 +218,23 @@
         if (!SelectedTime.HasValue || SelectedService == null)
             return;
 
-        // Set the final datetime
-        Appointment.ScheduledDateTime = SelectedDate.Date.Add(SelectedTime.Value);
+        // FINAL CHECK: Assign the Customer ID
+        if (IsAdminOrEmployee)
+        {
+            // The value is bound to Appointment.CustomerId from the dropdown
+            if (Appointment.CustomerId == 0)
+            {
+                // Error: Employee didn't select a customer
+                return;
+            }
+        }
+        else if (LoggedInCustomerId.HasValue)
+        {
+            // Auto-assign the logged-in Customer's ID
+            Appointment.CustomerId = LoggedInCustomerId.Value;
+        }
 
-        // Ensure other fields are set (redundant safety)
+        Appointment.ScheduledDateTime = SelectedDate.Date.Add(SelectedTime.Value);
         Appointment.EmployeeId = SelectedEmployeeId;
         Appointment.ServiceId = SelectedServiceId;
         Appointment.DurationMinutes = SelectedService.DurationMinutes;
