@@ -1,0 +1,21 @@
+﻿@page "/logout"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.Mvc.RazorPages
+@inject SignInManager<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> SignInManager
+
+@functions {
+    public async Task<IActionResult> OnGet()
+    {
+        // 1. Log the user out (Clear the Identity Cookie)
+        // Note: If you are NOT using ASP.NET Core Identity, replace the line below
+        // with:
+        // await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await SignInManager.SignOutAsync();
+
+        // 2. Redirect to the Home page or Login page
+        return LocalRedirect("/");
+    }
+}
