@@ -8,6 +8,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using SpaAndBeautyWebsite.Interfaces;
 using SpaAndBeautyWebsite.Services;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<SpaAndBeautyWebsiteContext>(options =>
@@ -20,6 +22,11 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // Register IHttpContextAccessor so components can SignIn/SignOut
 builder.Services.AddHttpContextAccessor();
 
+// Register the Blazor Server authentication state provider so AuthorizeView and
+// AuthenticationStateProvider resolve the cookie-based HttpContext.User.
+builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+
+// Authentication: use cookie authentication (adjust LoginPath/AccessDeniedPath to your app routes)
 // Authentication: use cookie authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -41,6 +48,7 @@ builder.Services.AddAuthorization(options =>
     // Convenience policies
     options.AddPolicy("StaffOrAbove", policy => policy.RequireRole("Staff", "Manager", "Admin"));
     options.AddPolicy("ManagerOrAbove", policy => policy.RequireRole("Manager", "Admin"));
+    options.AddPolicy("CustomersOrAbove", policy => policy.RequireRole("Customer", "Staff", "Manager", "Admin"));
 });
 
 // Register AnonymousOnly policy and its handler
@@ -115,7 +123,28 @@ app.MapGet("/signin-local", async (HttpContext httpContext) =>
     return Results.Redirect(returnUrl);
 });
 
-// Configure the HTTP request pipeline.
+app.MapGet("/account/signout", async (HttpContext httpContext) =>
+{
+    await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+    var cookieName = "SpaAndBeautyAuth";
+    try
+    {
+        httpContext.Response.Cookies.Delete(cookieName);
+        httpContext.Response.Cookies.Append(cookieName, string.Empty, new CookieOptions
+        {
+            Expires = DateTimeOffset.UnixEpoch,
+            MaxAge = TimeSpan.Zero,
+            Path = "/"
+        });
+    }
+    catch
+    {
+    }
+
+    return Results.Redirect("/");
+});
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);

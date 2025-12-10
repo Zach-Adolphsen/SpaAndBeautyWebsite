@@ -1,4 +1,6 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">SpaAndBeautyWebsite</a>
     </div>
@@ -14,29 +16,45 @@
             </NavLink>
         </div>
         
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="account">
-                <span class="bi bi-calendar-check-fill-nav-menu" aria-hidden="true"></span> Account
-            </NavLink>
-        </div>
+        <AuthorizeView Roles="Customer,Staff,Manager,Admin">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="account">
+                        <span class="bi bi-calendar-check-fill-nav-menu" aria-hidden="true"></span> Account
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
         
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="login">
-                <span class="bi bi-calendar-check-fill-nav-menu" aria-hidden="true"></span> Login
-            </NavLink>
-        </div>
+        <AuthorizeView>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="login">
+                        <span class="bi bi-calendar-check-fill-nav-menu" aria-hidden="true"></span> Login
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
         
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="create-account">
-                <span class="bi bi-calendar-check-fill-nav-menu" aria-hidden="true"></span> Create Account
-            </NavLink>
-        </div>
-        
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="appointments">
-                <span class="bi bi-calendar-check-fill-nav-menu" aria-hidden="true"></span> Appointments
-            </NavLink>
-        </div>
+        <AuthorizeView>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="create-account">
+                        <span class="bi bi-calendar-check-fill-nav-menu" aria-hidden="true"></span> Create Account
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Customer,Staff,Manager,Admin">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="appointments">
+                        <span class="bi bi-calendar-check-fill-nav-menu" aria-hidden="true"></span> Appointments
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
     </nav>
 </div>
 

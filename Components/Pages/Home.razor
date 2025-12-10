@@ -1,9 +1,11 @@
 @page "/"
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
 @using SpaAndBeautyWebsite.Models
 @using SpaAndBeautyWebsite.Data
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="hero-wrapper">
     <div class="hero-image"></div>
@@ -27,11 +29,17 @@
         </div>
 
         <div class="hero-nav-strip">
-            <a href="create-account">SIGN UP</a>
+            @if (!IsAuthenticated)
+            {
+                <a href="create-account">SIGN UP</a>
+            }
             <a href="#">REVIEWS</a>
             <a href="#">BATTLEPASS</a>
             <a href="services">SERVICES</a>
-            <a href="appointments">APPOINTMENTS</a>
+            @if (CanViewAppointments)
+            {
+                <a href="appointments">APPOINTMENTS</a>
+            }
         </div>
     </div>
 </div>
@@ -325,6 +333,8 @@
 
 @code {
     private int visibleReviews = 6;
+    private bool IsAuthenticated = false;
+    private bool CanViewAppointments = false;
 
     public class ReviewModel
     {
@@ -352,6 +362,30 @@
                 Rating = r.Rating
             };
             Reviews.Insert(0, displayModel);
+        }
+
+        // Get auth info safely (avoids relying on a CascadingAuthenticationState)
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            IsAuthenticated = user?.Identity?.IsAuthenticated ?? false;
+
+            if (IsAuthenticated)
+            {
+                // policy "CustomersOrAbove" used in other places means any of these roles
+                CanViewAppointments =
+                    user.IsInRole("Customer") ||
+                    user.IsInRole("Staff") ||
+                    user.IsInRole("Manager") ||
+                    user.IsInRole("Admin");
+            }
+        }
+        catch
+        {
+            // swallow errors here so page render doesn't fail when auth provider not available
+            IsAuthenticated = false;
+            CanViewAppointments = false;
         }
     }
 

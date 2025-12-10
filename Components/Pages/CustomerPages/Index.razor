@@ -5,6 +5,8 @@
 @using SpaAndBeautyWebsite.Data
 @implements IAsyncDisposable
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "RequireAdmin")]
 
 <PageTitle>Index</PageTitle>
 

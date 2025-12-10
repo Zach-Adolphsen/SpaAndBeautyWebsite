@@ -1,11 +1,14 @@
 ﻿@page "/account"
 @using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using SpaAndBeautyWebsite.Interfaces
 @using SpaAndBeautyWebsite.Models
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavManager
 @inject IUserService UserService
+@inject IJSRuntime JS
+@attribute [Authorize(Policy = "CustomersOrAbove")]
 @rendermode InteractiveServer
 
 <div class="container mt-5 mb-5">
