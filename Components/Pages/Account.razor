@@ -1,11 +1,14 @@
 ﻿@page "/account"
 @using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using SpaAndBeautyWebsite.Interfaces
 @using SpaAndBeautyWebsite.Models
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavManager
 @inject IUserService UserService
+@inject IJSRuntime JS
+@attribute [Authorize(Policy = "CustomersOrAbove")]
 
 <div class="container mt-5 mb-5">
     <div class="row">
@@ -20,7 +23,7 @@
                 <p class="text-muted">@userProfile.JobTitle</p>
 
                 <div class="d-grid gap-2 mt-3">
-                    <button class="btn btn-outline-danger" @onclick="Logout">Sign Out</button>
+                    <a class="btn btn-outline-danger" href="/account/signout" role="button">Sign Out</a>
                 </div>
             </div>
         </div>
@@ -94,7 +97,6 @@
 </style>
 
 @code {
-    // This now refers strictly to SpaAndBeautyWebsite.Models.UserProfile
     private User userProfile = new User();
     private User originalUserProfile = new User();
     private bool isLoading = true;
@@ -126,11 +128,6 @@
     {
         CloneProfile(originalUserProfile, userProfile);
         StateHasChanged();
-    }
-
-    private void Logout()
-    {
-        NavManager.NavigateTo("/logout", forceLoad: true);
     }
 
     private async Task SaveChanges()
