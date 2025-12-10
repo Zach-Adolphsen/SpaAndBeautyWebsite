@@ -27,6 +27,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
 // Authentication: use cookie authentication (adjust LoginPath/AccessDeniedPath to your app routes)
+// Authentication: use cookie authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -59,7 +60,11 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, SpaAndBeautyWebsite.Authorization.AnonymousOnlyHandler>();
 
-// Add services to the container.
+// ---------------------------------------------------------
+// UPDATED: Added Razor Pages support here
+// ---------------------------------------------------------
+builder.Services.AddRazorPages();
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -80,8 +85,6 @@ catch (Exception ex)
 }
 
 // Add a minimal endpoint to perform the cookie sign-in on a normal HTTP request.
-// Blazor Server components cannot set response cookies after the SignalR response has started,
-// so we navigate the browser to this endpoint (forceLoad) after creating the account.
 app.MapGet("/signin-local", async (HttpContext httpContext) =>
 {
     var q = httpContext.Request.Query;
@@ -145,7 +148,6 @@ app.MapGet("/account/signout", async (HttpContext httpContext) =>
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
     app.UseMigrationsEndPoint();
 }
@@ -154,12 +156,18 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
-// Enable authentication + authorization middleware (order matters)
+// Enable authentication + authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+// ---------------------------------------------------------
+// UPDATED: Map Razor Pages routes here
+// ---------------------------------------------------------
+app.MapRazorPages();
 
 app.Run();
