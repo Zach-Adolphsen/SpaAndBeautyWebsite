@@ -29,7 +29,6 @@ else
                 @if (IsAdminOrEmployee)
                 {
                     @* --- EMPLOYEE VIEW: READ-ONLY DETAILS + EDITABLE STATUS --- *@
-
                     <div class="mb-3">
                         <label class="form-label">Customer:</label>
                         <input type="text" class="form-control" value="@CustomerName" readonly />
@@ -275,7 +274,6 @@ else
         }
 
         // Note: Appointment.Status is bound directly, so it updates automatically for Employees
-
         using var context = DbFactory.CreateDbContext();
         context.Attach(Appointment!).State = EntityState.Modified;
 
