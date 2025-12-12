@@ -5,6 +5,7 @@
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Policy = "RequireAdmin")]
+@rendermode InteractiveServer
 
 <PageTitle>Delete</PageTitle>
 
@@ -45,7 +46,8 @@
         </dl>
         <EditForm method="post" Model="customer" OnValidSubmit="DeleteCustomer" FormName="delete" Enhance>
             <button type="submit" class="btn btn-danger" disabled="@(customer is null)">Delete</button> |
-            <a href="/customers">Back to List</a>
+            <a href="/edit-users">Back to Edit</a>
+            <AntiforgeryToken />
         </EditForm>
     }
 </div>
@@ -72,6 +74,6 @@
         using var context = DbFactory.CreateDbContext();
         context.Customer.Remove(customer!);
         await context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/customers");
+        NavigationManager.NavigateTo("/edit-users");
     }
 }

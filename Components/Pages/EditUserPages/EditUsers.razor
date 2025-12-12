@@ -1,0 +1,70 @@
+﻿@page "/edit-users"
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Data
+@using SpaAndBeautyWebsite.Models
+@attribute [Authorize(Policy = "RequireAdmin")]
+@implements IAsyncDisposable
+
+<h3>Edit Employees</h3>
+<a href="employees/create" class="btn btn-primary">Create Employee Account</a>
+@if (employeeContext is not null)
+{
+    <QuickGrid Class="table" Items="employeeContext.Employee">
+        <PropertyColumn Property="employee => employee.FirstName" />
+        <PropertyColumn Property="employee => employee.LastName" />
+        <PropertyColumn Property="employee => employee.Username" />
+        <PropertyColumn Property="employee => employee.JobTitle" />
+        <PropertyColumn Property="employee => employee.Salary" />
+        <PropertyColumn Property="employee => employee.Permission" />
+
+        <TemplateColumn Context="employee">
+            <a href="@($"employees/edit?employeeid={employee.EmployeeId}")">Edit</a> |
+            <a href="@($"employees/details?employeeid={employee.EmployeeId}")">Details</a> |
+            <a href="@($"employees/delete?employeeid={employee.EmployeeId}")">Delete</a>
+        </TemplateColumn>
+    </QuickGrid>
+}
+
+<h3>Edit Customers</h3>
+@if (customerContext is not null)
+{
+    <QuickGrid Class="table" Items="customerContext.Customer">
+        <PropertyColumn Property="customer => customer.FirstName" />
+        <PropertyColumn Property="customer => customer.LastName" />
+        <PropertyColumn Property="customer => customer.Username" />
+
+        <TemplateColumn Context="customer">
+            <a href="@($"customers/edit?customerid={customer.CustomerId}")">Edit</a> |
+            <a href="@($"customers/details?customerid={customer.CustomerId}")">Details</a> |
+            <a href="@($"customers/delete?customerid={customer.CustomerId}")">Delete</a> |
+            <a href=@($"customers/promote?customerid={customer.CustomerId}")>Promote to Employee</a>
+        </TemplateColumn>
+    </QuickGrid>
+}
+
+@code {
+    private SpaAndBeautyWebsiteContext? employeeContext;
+    private SpaAndBeautyWebsiteContext? customerContext;
+
+    protected override async Task OnInitializedAsync()
+    {
+        employeeContext = await DbFactory.CreateDbContextAsync();
+        customerContext = await DbFactory.CreateDbContextAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (employeeContext is not null)
+        {
+            await employeeContext.DisposeAsync();
+        }
+        if (customerContext is not null)
+        {
+            await customerContext.DisposeAsync();
+        }
+    }
+}

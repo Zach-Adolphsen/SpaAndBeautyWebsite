@@ -5,6 +5,7 @@
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Policy = "RequireAdmin")]
+@rendermode InteractiveServer
 
 <PageTitle>Create</PageTitle>
 
@@ -14,22 +15,36 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <EditForm method="post" Model="Employee" OnValidSubmit="AddEmployee" FormName="create" Enhance>
+        <EditForm Model="Employee" OnValidSubmit="AddEmployee" OnInvalidSubmit="HandleInvalidSubmit">
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert"/>
             <div class="mb-3">
                 <label for="firstname" class="form-label">FirstName:</label> 
                 <InputText id="firstname" @bind-Value="Employee.FirstName" class="form-control" aria-required="true"/> 
                 <ValidationMessage For="() => Employee.FirstName" class="text-danger" /> 
-            </div>        
+            </div>
             <div class="mb-3">
                 <label for="lastname" class="form-label">LastName:</label> 
                 <InputText id="lastname" @bind-Value="Employee.LastName" class="form-control" aria-required="true"/> 
                 <ValidationMessage For="() => Employee.LastName" class="text-danger" /> 
-            </div>        
+            </div>
+
+            <!-- Username and Password are required by the model - include them -->
+            <div class="mb-3">
+                <label for="username" class="form-label">Username:</label>
+                <InputText id="username" @bind-Value="Employee.Username" class="form-control" />
+                <ValidationMessage For="() => Employee.Username" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password:</label>
+                <InputText id="password" type="password" @bind-Value="Employee.Password" class="form-control" />
+                <ValidationMessage For="() => Employee.Password" class="text-danger" />
+            </div>
+
             <div class="mb-3">
                 <label for="phonenumber" class="form-label">PhoneNumber:</label> 
-                <InputText id="phonenumber" @bind-Value="Employee.PhoneNumber" class="form-control" aria-required="true"/> 
+                <InputText id="phonenumber" @bind-Value="Employee.PhoneNumber" class="form-control"
+                           placeholder="123-456-7890 or +1-123-456-7890" />
                 <ValidationMessage For="() => Employee.PhoneNumber" class="text-danger" /> 
             </div>        
             <div class="mb-3">
@@ -54,7 +69,8 @@
             </div>        
             <div class="mb-3">
                 <label for="zipcode" class="form-label">ZipCode:</label> 
-                <InputText id="zipcode" @bind-Value="Employee.ZipCode" class="form-control" aria-required="true"/> 
+                <InputText id="zipcode" @bind-Value="Employee.ZipCode" class="form-control" aria-required="true"
+                           placeholder="12345 or 12345-6789"/>
                 <ValidationMessage For="() => Employee.ZipCode" class="text-danger" /> 
             </div>        
             <div class="mb-3">
@@ -66,23 +82,29 @@
                 <label for="salary" class="form-label">Salary:</label> 
                 <InputNumber id="salary" @bind-Value="Employee.Salary" class="form-control" aria-required="true"/> 
                 <ValidationMessage For="() => Employee.Salary" class="text-danger" /> 
-            </div>        
+            </div>
+
             <div class="mb-3">
-                <label for="permission" class="form-label">Permission:</label> 
-                <InputText id="permission" @bind-Value="Employee.Permission" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Employee.Permission" class="text-danger" /> 
-            </div>        
+                <label for="permission" class="form-label">Permission:</label>
+                <InputSelect id="permission" @bind-Value="Employee.Permission" class="form-control">
+                    <option value="">-- select --</option>
+                    <option>Admin</option>
+                    <option>Staff</option>
+                    <option>Manager</option>
+                </InputSelect>
+                <ValidationMessage For="() => Employee.Permission" class="text-danger" />
+            </div>
+
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
 </div>
 
 <div>
-    <a href="/employees">Back to List</a>
+    <a href="/edit-users">Back to Edit</a>
 </div>
 
 @code {
-    [SupplyParameterFromForm]
     private Employee Employee { get; set; } = new()
     {
         FirstName = string.Empty,
@@ -99,12 +121,21 @@
         Username = string.Empty
     };
 
-    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    // Called when the form is valid
     private async Task AddEmployee()
     {
         using var context = DbFactory.CreateDbContext();
         context.Employee.Add(Employee);
         await context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/employees");
+        NavigationManager.NavigateTo("/edit-users");
+    }
+
+    // Helpful for debugging: runs if validation fails
+    private void HandleInvalidSubmit(EditContext editContext)
+    {
+        // This forces the ValidationSummary and ValidationMessage components to render
+        // and is useful when required model properties were not on the form.
+        // Keep simple for now — you can inspect editContext for specific failures.
+        StateHasChanged();
     }
 }

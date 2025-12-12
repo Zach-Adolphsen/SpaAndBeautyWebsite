@@ -5,6 +5,7 @@
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Policy = "RequireAdmin")]
+@rendermode InteractiveServer
 
 <PageTitle>Details</PageTitle>
 
@@ -44,7 +45,7 @@
         </dl>
         <div>
             <a href="@($"/employees/edit?employeeid={employee.EmployeeId}")">Edit</a> |
-            <a href="@($"/employees")">Back to List</a>
+            <a href="@($"/edit-users")">Back to Edit</a>
         </div>
     }
 </div>

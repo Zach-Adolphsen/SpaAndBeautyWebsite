@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SpaAndBeautyWebsite.Models
@@ -27,11 +26,11 @@ namespace SpaAndBeautyWebsite.Models
         [DataType(DataType.Password)]
         public required string Password { get; set; }
 
-        // Format: +1-123-456-7890
+        // Accepts either "123-456-7890" or "+1-123-456-7890"
         [Required]
         [StringLength(15)]
-        [RegularExpression(@"^\+\d{1}-\d{3}-\d{3}-\d{4}$", ErrorMessage = 
-            "Phone number must be in the format +1-123-456-7890")]
+        [RegularExpression(@"^(\+\d{1}-)?\d{3}-\d{3}-\d{4}$", ErrorMessage = 
+            "Phone number must be in the format +1-123-456-7890 or 123-456-7890")]
         public required string PhoneNumber { get; set; }
 
         [Required]
@@ -51,10 +50,11 @@ namespace SpaAndBeautyWebsite.Models
         [StringLength(30)]
         public required string State { get; set; }
 
+        // US zip code: 12345 or 12345-6789
         [Required]
-        [StringLength(15)]
-        [RegularExpression(@"^(\+\d{1}-)?\d{3}-\d{3}-\d{4}$", ErrorMessage = 
-            "Phone number must be in the format +1-234-567-8901 or 123-456-7890")]
+        [StringLength(10)]
+        [RegularExpression(@"^\d{5}(-\d{4})?$", ErrorMessage =
+            "Zip code must be 5 digits or 5+4 format (12345 or 12345-6789)")]
         public required string ZipCode { get; set; }
 
         [Required]

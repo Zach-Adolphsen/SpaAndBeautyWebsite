@@ -5,6 +5,7 @@
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Policy = "RequireAdmin")]
+@rendermode InteractiveServer
 
 <PageTitle>Edit</PageTitle>
 
@@ -20,10 +21,11 @@ else
 {
     <div class="row">
         <div class="col-md-4">
-            <EditForm method="post" Model="Customer" OnValidSubmit="UpdateCustomer" FormName="edit" Enhance>
+            <EditForm Model="Customer" OnValidSubmit="UpdateCustomer" OnInvalidSubmit="HandleInvalidSubmit">
                 <DataAnnotationsValidator />
-                <ValidationSummary role="alert"/>
-                <input type="hidden" name="Customer.CustomerId" value="@Customer.CustomerId" />
+                <ValidationSummary class="text-danger" role="alert"/>
+                <input type="hidden" value="@Customer.CustomerId" />
+
                 <div class="mb-3">
                     <label for="firstname" class="form-label">FirstName:</label>
                     <InputText id="firstname" @bind-Value="Customer.FirstName" class="form-control" aria-required="true"/>
@@ -41,12 +43,13 @@ else
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Password:</label>
-                    <InputText id="password" @bind-Value="Customer.Password" class="form-control" aria-required="true"/>
+                    <InputText id="password" type="password" @bind-Value="Customer.Password" class="form-control" aria-required="true"/>
                     <ValidationMessage For="() => Customer.Password" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="phonenumber" class="form-label">PhoneNumber:</label>
-                    <InputText id="phonenumber" @bind-Value="Customer.PhoneNumber" class="form-control" aria-required="true"/>
+                    <InputText id="phonenumber" @bind-Value="Customer.PhoneNumber" class="form-control"
+                               placeholder="123-456-7890 or +1-123-456-7890" />
                     <ValidationMessage For="() => Customer.PhoneNumber" class="text-danger" />
                 </div>
                 <div class="mb-3">
@@ -61,14 +64,14 @@ else
 }
 
 <div>
-    <a href="/customers">Back to List</a>
+    <a href="/edit-users">Back to Edit</a>
 </div>
 
 @code {
     [SupplyParameterFromQuery]
     private int CustomerId { get; set; }
 
-    [SupplyParameterFromForm]
+    // Load from DB instead of supplying from form posts
     private Customer? Customer { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -82,8 +85,7 @@ else
         }
     }
 
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    // Persist changes
     private async Task UpdateCustomer()
     {
         using var context = DbFactory.CreateDbContext();
@@ -105,7 +107,13 @@ else
             }
         }
 
-        NavigationManager.NavigateTo("/customers");
+        NavigationManager.NavigateTo("/edit-users");
+    }
+
+    // Show validation failures immediately (helpful when required model fields are missing)
+    private void HandleInvalidSubmit(EditContext editContext)
+    {
+        StateHasChanged();
     }
 
     private bool CustomerExists(int customerid)

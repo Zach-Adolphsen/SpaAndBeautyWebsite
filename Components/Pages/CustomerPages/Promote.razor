@@ -1,4 +1,4 @@
-﻿@page "/employees/edit"
+﻿@page "/customers/promote"
 @using Microsoft.EntityFrameworkCore
 @using SpaAndBeautyWebsite.Models
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
@@ -7,39 +7,38 @@
 @attribute [Authorize(Policy = "RequireAdmin")]
 @rendermode InteractiveServer
 
-<PageTitle>Edit</PageTitle>
+<PageTitle>Promote</PageTitle>
 
-<h1>Edit</h1>
+<h1>Promote Customer to Employee</h1>
 
-<h2>Employee</h2>
-<hr />
-@if (Employee is null)
+@if (Customer is null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
+    <h2>Promote: @Customer.FirstName @Customer.LastName</h2>
+    <hr />
     <div class="row">
         <div class="col-md-6">
-            <EditForm Model="Employee" OnValidSubmit="UpdateEmployee" OnInvalidSubmit="HandleInvalidSubmit">
+            <EditForm Model="Employee" OnValidSubmit="PromoteCustomer" OnInvalidSubmit="HandleInvalidSubmit">
                 <DataAnnotationsValidator />
-                <ValidationSummary class="text-danger" role="alert"/>
+                <ValidationSummary class="text-danger" role="alert" />
 
-                <input type="hidden" value="@Employee.EmployeeId" />
+                <input type="hidden" value="@Customer.CustomerId" />
 
                 <div class="mb-3">
                     <label for="firstname" class="form-label">FirstName:</label>
-                    <InputText id="firstname" @bind-Value="Employee.FirstName" class="form-control" aria-required="true"/>
+                    <InputText id="firstname" @bind-Value="Employee.FirstName" class="form-control" />
                     <ValidationMessage For="() => Employee.FirstName" class="text-danger" />
                 </div>
 
                 <div class="mb-3">
                     <label for="lastname" class="form-label">LastName:</label>
-                    <InputText id="lastname" @bind-Value="Employee.LastName" class="form-control" aria-required="true"/>
+                    <InputText id="lastname" @bind-Value="Employee.LastName" class="form-control" />
                     <ValidationMessage For="() => Employee.LastName" class="text-danger" />
                 </div>
 
-                <!-- Username / Password were missing from the form but are required by the model -->
                 <div class="mb-3">
                     <label for="username" class="form-label">Username:</label>
                     <InputText id="username" @bind-Value="Employee.Username" class="form-control" />
@@ -91,7 +90,8 @@ else
 
                 <div class="mb-3">
                     <label for="zipcode" class="form-label">ZipCode:</label>
-                    <InputText id="zipcode" @bind-Value="Employee.ZipCode" class="form-control" placeholder="12345 or 12345-6789" />
+                    <InputText id="zipcode" @bind-Value="Employee.ZipCode" class="form-control"
+                               placeholder="12345 or 12345-6789" />
                     <ValidationMessage For="() => Employee.ZipCode" class="text-danger" />
                 </div>
 
@@ -118,24 +118,36 @@ else
                     <ValidationMessage For="() => Employee.Permission" class="text-danger" />
                 </div>
 
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" class="btn btn-primary">Promote</button>
+                <a class="btn btn-secondary ms-2" href="/edit-users">Cancel</a>
             </EditForm>
         </div>
     </div>
 }
 
-<div>
-    <a href="/edit-users">Back to Edit</a>
-</div>
-
 @code {
     [SupplyParameterFromQuery]
-    private int EmployeeId { get; set; }
+    private int CustomerId { get; set; }
 
-    // remove SupplyParameterFromForm: Employee is loaded from DB in OnInitializedAsync
-    private Employee? Employee { get; set; }
+    private Customer? Customer { get; set; }
 
-    // States used to populate state dropdown (full names)
+    private Employee Employee { get; set; } = new()
+    {
+        FirstName = string.Empty,
+        LastName = string.Empty,
+        PhoneNumber = string.Empty,
+        Email = string.Empty,
+        Password = string.Empty,
+        Street = string.Empty,
+        City = string.Empty,
+        State = string.Empty,
+        ZipCode = string.Empty,
+        JobTitle = string.Empty,
+        Permission = string.Empty,
+        Username = string.Empty,
+        Salary = 0m
+    };
+
     private readonly string[] States = new[]
     {
         "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware",
@@ -150,34 +162,62 @@ else
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        Employee ??= await context.Employee.FirstOrDefaultAsync(m => m.EmployeeId == EmployeeId);
+        Customer = await context.Customer.FirstOrDefaultAsync(c => c.CustomerId == CustomerId);
 
-        if (Employee is null)
+        if (Customer is null)
         {
             NavigationManager.NavigateTo("notfound");
+            return;
+        }
+
+        // Autofill known fields from the customer into the employee model.
+        Employee.FirstName = Customer.FirstName;
+        Employee.LastName = Customer.LastName;
+        Employee.Username = Customer.Username;
+        Employee.Password = Customer.Password;
+        Employee.PhoneNumber = Customer.PhoneNumber;
+        Employee.Email = Customer.Email;
+
+        // If the Customer has address fields on its model and you want to copy them,
+        // do so here (I've left them empty by default so user confirms).
+        Employee.Street = string.Empty;
+        Employee.City = string.Empty;
+        Employee.State = string.Empty;
+        Employee.ZipCode = string.Empty;
+
+        // Prefer an allowed permission value so validation can pass quickly
+        if (string.IsNullOrWhiteSpace(Employee.Permission))
+        {
+            Employee.Permission = "Staff";
         }
     }
 
-    private async Task UpdateEmployee()
+    private async Task PromoteCustomer()
     {
         using var context = DbFactory.CreateDbContext();
-        // Attach and mark modified so EF will update
-        context.Attach(Employee!).State = EntityState.Modified;
+
+        // Ensure the customer still exists in this context
+        var customerInDb = await context.Customer.FirstOrDefaultAsync(c => c.CustomerId == CustomerId);
+        if (customerInDb is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+            return;
+        }
+
+        // Add the new employee
+        context.Employee.Add(Employee);
+
+        // Remove the customer record
+        context.Customer.Remove(customerInDb);
 
         try
         {
             await context.SaveChangesAsync();
         }
-        catch (DbUpdateConcurrencyException)
+        catch (DbUpdateException)
         {
-            if (!EmployeeExists(Employee!.EmployeeId))
-            {
-                NavigationManager.NavigateTo("notfound");
-            }
-            else
-            {
-                throw;
-            }
+            // handle unique constraint or other DB errors here if needed
+            throw;
         }
 
         NavigationManager.NavigateTo("/edit-users");
@@ -186,13 +226,6 @@ else
     private void HandleInvalidSubmit(EditContext editContext)
     {
         // Force UI update so ValidationSummary/ValidationMessage show errors.
-        // Useful if required model fields were not present on the form.
         StateHasChanged();
-    }
-
-    private bool EmployeeExists(int employeeid)
-    {
-        using var context = DbFactory.CreateDbContext();
-        return context.Employee.Any(e => e.EmployeeId == employeeid);
     }
 }
