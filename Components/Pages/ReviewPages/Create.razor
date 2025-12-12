@@ -31,9 +31,7 @@
                 <DataAnnotationsValidator />
                 <ValidationSummary class="text-danger" role="alert" />
 
-                @* REMOVED: "Who are you?" Dropdown is gone. *@
-
-                @* READ ONLY: Show the user who they are posting as *@
+                @* Show the user who they are posting as *@
                 <div class="mb-3">
                     <label class="form-label">Reviewing as:</label>
                     <input type="text" class="form-control" value="@CurrentCustomer.FirstName @CurrentCustomer.LastName" disabled />
