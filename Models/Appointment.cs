@@ -33,7 +33,7 @@ namespace SpaAndBeautyWebsite.Models
         // must be "Scheduled", "Checked In", "Completed", "Cancelled" or "No Show"
         [Required]
         [StringLength(20)]
-        [RegularExpression(@"^(Scheduled|Checked In|Completed|Cancelled|No Show)$", ErrorMessage = 
+        [RegularExpression(@"^(Scheduled|Checked In|In Progress|Completed|Cancelled|No Show)$", ErrorMessage = 
             "Status must be one of the following: Scheduled, Checked In, Completed, Cancelled, No Show")]
 
         public required string Status { get; set; }

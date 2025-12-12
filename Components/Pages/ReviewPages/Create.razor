@@ -1,8 +1,12 @@
 ﻿@page "/reviews/create"
+@rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Authorization
 @using SpaAndBeautyWebsite.Models
+@using SpaAndBeautyWebsite.Data
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Write a Review</PageTitle>
 
@@ -11,60 +15,67 @@
         <h1 class="text-center section-title">Write a Review</h1>
         <div class="title-divider"></div>
 
-        <EditForm method="post" Model="Review" OnValidSubmit="AddReview" FormName="create" Enhance>
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-
-            <div class="mb-3">
-                <label for="customer" class="form-label">Who are you?</label>
-                <InputSelect id="customer" @bind-Value="Review.CustomerId" class="form-control">
-                    <option value="">-- Select Your Name --</option>
-                    @foreach (var c in Customers)
-                    {
-                        <option value="@c.CustomerId">@c.FirstName @c.LastName</option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="() => Review.CustomerId" class="text-danger" />
+        @if (IsLoading)
+        {
+            <p class="text-center"><em>Loading...</em></p>
+        }
+        else if (CurrentCustomer == null)
+        {
+            <div class="alert alert-danger">
+                Error: You must be logged in as a registered Customer to write a review.
             </div>
+        }
+        else
+        {
+            <EditForm Model="Review" OnValidSubmit="AddReview" FormName="create">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" role="alert" />
 
-            <div class="mb-3">
-                <label for="service" class="form-label">Service Received:</label>
-                <InputSelect id="service" @bind-Value="Review.ServiceId" class="form-control">
-                    <option value="">-- Select Service --</option>
-                    @foreach (var s in Services)
-                    {
-                        <option value="@s.ServiceId">@s.Name</option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="() => Review.ServiceId" class="text-danger" />
-            </div>
+                @* Show the user who they are posting as *@
+                <div class="mb-3">
+                    <label class="form-label">Reviewing as:</label>
+                    <input type="text" class="form-control" value="@CurrentCustomer.FirstName @CurrentCustomer.LastName" disabled />
+                </div>
 
-            <div class="mb-3">
-                <label for="employee" class="form-label">Employee seen:</label>
-                <InputSelect id="employee" @bind-Value="Review.EmployeeId" class="form-control">
-                    <option value="">-- Select Employee --</option>
-                    @foreach (var e in Employees)
-                    {
-                        <option value="@e.EmployeeId">@e.FirstName @e.LastName</option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="() => Review.EmployeeId" class="text-danger" />
-            </div>
+                <div class="mb-3">
+                    <label for="service" class="form-label">Service Received:</label>
+                    <InputSelect id="service" @bind-Value="Review.ServiceId" class="form-control">
+                        <option value="">-- Select Service --</option>
+                        @foreach (var s in Services)
+                        {
+                            <option value="@s.ServiceId">@s.Name</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Review.ServiceId" class="text-danger" />
+                </div>
 
-            <div class="mb-3">
-                <label for="rating" class="form-label">Rating (1-10):</label>
-                <InputNumber id="rating" @bind-Value="Review.Rating" class="form-control" />
-                <ValidationMessage For="() => Review.Rating" class="text-danger" />
-            </div>
+                <div class="mb-3">
+                    <label for="employee" class="form-label">Employee seen:</label>
+                    <InputSelect id="employee" @bind-Value="Review.EmployeeId" class="form-control">
+                        <option value="">-- Select Employee --</option>
+                        @foreach (var e in Employees)
+                        {
+                            <option value="@e.EmployeeId">@e.FirstName @e.LastName</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Review.EmployeeId" class="text-danger" />
+                </div>
 
-            <div class="mb-3">
-                <label for="description" class="form-label">Your Review:</label>
-                <InputTextArea id="description" @bind-Value="Review.Description" class="form-control" rows="4" />
-                <ValidationMessage For="() => Review.Description" class="text-danger" />
-            </div>
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Rating (1-10):</label>
+                    <InputNumber id="rating" @bind-Value="Review.Rating" class="form-control" />
+                    <ValidationMessage For="() => Review.Rating" class="text-danger" />
+                </div>
 
-            <button type="submit" class="btn btn-primary w-100">Submit Review</button>
-        </EditForm>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Your Review:</label>
+                    <InputTextArea id="description" @bind-Value="Review.Description" class="form-control" rows="4" />
+                    <ValidationMessage For="() => Review.Description" class="text-danger" />
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Submit Review</button>
+            </EditForm>
+        }
 
         <div class="mt-3 text-center">
             <a href="/reviews" class="btn-link">Back to List</a>
@@ -76,25 +87,44 @@
     [SupplyParameterFromForm]
     private Review Review { get; set; } = new() { Description = string.Empty };
 
-    // These lists hold the data for our Dropdowns
-    private List<Customer> Customers = new();
     private List<Service> Services = new();
     private List<Employee> Employees = new();
 
+    private Customer? CurrentCustomer;
+    private bool IsLoading = true;
+
     protected override async Task OnInitializedAsync()
     {
-        // We need to load the lists from the database so the dropdowns have options
         using var context = DbFactory.CreateDbContext();
-        Customers = await context.Customer.ToListAsync();
         Services = await context.Service.ToListAsync();
         Employees = await context.Employee.ToListAsync();
+
+        // 1. Get the current logged-in user
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            var username = user.Identity.Name;
+
+            // 2. Find the matching Customer record in the database
+            CurrentCustomer = await context.Customer.FirstOrDefaultAsync(c => c.Username == username);
+
+            if (CurrentCustomer != null)
+            {
+                // 3. Automatically assign the ID
+                Review.CustomerId = CurrentCustomer.CustomerId;
+            }
+        }
+
+        IsLoading = false;
     }
 
     private async Task AddReview()
     {
-        using var context = DbFactory.CreateDbContext();
+        if (CurrentCustomer == null) return;
 
-        // This takes the ID numbers selected in the dropdowns and saves them
+        using var context = DbFactory.CreateDbContext();
         context.Review.Add(Review);
         await context.SaveChangesAsync();
 

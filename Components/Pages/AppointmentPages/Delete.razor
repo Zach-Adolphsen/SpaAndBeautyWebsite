@@ -1,4 +1,5 @@
 ﻿@page "/appointments/delete"
+@rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
 @using SpaAndBeautyWebsite.Models
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
@@ -16,32 +17,27 @@
     {
         <p><em>Loading...</em></p>
     }
-    else {
+    else
+    {
         <dl class="row">
-            <dt class="col-sm-2">EmployeeId</dt>
-            <dd class="col-sm-10">@appointment.EmployeeId</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">CustomerId</dt>
-            <dd class="col-sm-10">@appointment.CustomerId</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">ServiceId</dt>
-            <dd class="col-sm-10">@appointment.ServiceId</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">ScheduledDateTime</dt>
+            <dt class="col-sm-2">Employee</dt>
+            <dd class="col-sm-10">@EmployeeName</dd>
+
+            <dt class="col-sm-2">Service</dt>
+            <dd class="col-sm-10">@ServiceName</dd>
+
+            <dt class="col-sm-2">Scheduled Date</dt>
             <dd class="col-sm-10">@appointment.ScheduledDateTime</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">DurationMinutes</dt>
-            <dd class="col-sm-10">@appointment.DurationMinutes</dd>
-        </dl>
-        <dl class="row">
+
+            <dt class="col-sm-2">Duration</dt>
+            <dd class="col-sm-10">@appointment.DurationMinutes minutes</dd>
+
             <dt class="col-sm-2">Status</dt>
             <dd class="col-sm-10">@appointment.Status</dd>
         </dl>
+
         <EditForm method="post" Model="appointment" OnValidSubmit="DeleteAppointment" FormName="delete" Enhance>
+            <AntiforgeryToken />
             <button type="submit" class="btn btn-danger" disabled="@(appointment is null)">Delete</button> |
             <a href="/appointments">Back to List</a>
         </EditForm>
@@ -50,6 +46,10 @@
 
 @code {
     private Appointment? appointment;
+
+    // Variables to hold the readable names
+    private string EmployeeName = "Loading...";
+    private string ServiceName = "Loading...";
 
     [SupplyParameterFromQuery]
     private int AppointmentId { get; set; }
@@ -63,13 +63,30 @@
         {
             NavigationManager.NavigateTo("notfound");
         }
+        else
+        {
+            // Look up Employee Name
+            var emp = await context.Employee.FindAsync(appointment.EmployeeId);
+            EmployeeName = emp != null ? $"{emp.FirstName} {emp.LastName}" : "Unknown Employee";
+
+            // Look up Service Name
+            var svc = await context.Service.FindAsync(appointment.ServiceId);
+            ServiceName = svc?.Name ?? "Unknown Service";
+        }
     }
 
     private async Task DeleteAppointment()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Appointment.Remove(appointment!);
-        await context.SaveChangesAsync();
+        await using var context = DbFactory.CreateDbContext();
+        // Fetch the item again to ensure it's tracked for deletion
+        var appointmentToDelete = await context.Appointment.FindAsync(appointment!.AppointmentId);
+
+        if (appointmentToDelete != null)
+        {
+            context.Appointment.Remove(appointmentToDelete);
+            await context.SaveChangesAsync();
+        }
+
         NavigationManager.NavigateTo("/appointments");
     }
 }

@@ -72,6 +72,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
+app.UseAntiforgery();
+
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try

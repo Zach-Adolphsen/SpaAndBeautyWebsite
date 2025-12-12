@@ -1,86 +1,153 @@
 ﻿@page "/appointments/edit"
+@rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Authorization
 @using SpaAndBeautyWebsite.Models
+@using SpaAndBeautyWebsite.Data
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-<PageTitle>Edit</PageTitle>
+<PageTitle>Edit Appointment</PageTitle>
 
-<h1>Edit</h1>
-
-<h2>Appointment</h2>
+<h1>Edit Appointment</h1>
 <hr />
+
 @if (Appointment is null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Loading appointment details...</em></p>
 }
 else
 {
     <div class="row">
-        <div class="col-md-4">
-            <EditForm method="post" Model="Appointment" OnValidSubmit="UpdateAppointment" FormName="edit" Enhance>
+        <div class="col-md-5">
+            <EditForm Model="Appointment" OnValidSubmit="UpdateAppointment" FormName="edit">
+                <AntiforgeryToken />
                 <DataAnnotationsValidator />
-                <ValidationSummary role="alert" />
+                <ValidationSummary class="text-danger" role="alert" />
 
-                @* HIDDEN INPUTS: Critical to keep these IDs associated when saving *@
-                <input type="hidden" name="Appointment.AppointmentId" value="@Appointment.AppointmentId" />
-                <input type="hidden" name="Appointment.EmployeeId" value="@Appointment.EmployeeId" />
-                <input type="hidden" name="Appointment.CustomerId" value="@Appointment.CustomerId" />
-                <input type="hidden" name="Appointment.ServiceId" value="@Appointment.ServiceId" />
+                @if (IsAdminOrEmployee)
+                {
+                    @* --- EMPLOYEE VIEW: READ-ONLY DETAILS + EDITABLE STATUS --- *@
+                    <div class="mb-3">
+                        <label class="form-label">Customer:</label>
+                        <input type="text" class="form-control" value="@CustomerName" readonly />
+                    </div>
 
-                @* Display Employee Name (FirstName + LastName) *@
-                <div class="mb-3">
-                    <label class="form-label">Employee:</label>
-                    <input type="text" class="form-control" value="@EmployeeName" disabled />
+                    <div class="mb-3">
+                        <label class="form-label">Employee:</label>
+                        <input type="text" class="form-control" value="@EmployeeName" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Date:</label>
+                        <input type="text" class="form-control" value="@Appointment.ScheduledDateTime.ToShortDateString()" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Service:</label>
+                        <input type="text" class="form-control" value="@ServiceName" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Time:</label>
+                        <input type="text" class="form-control" value="@Appointment.ScheduledDateTime.ToShortTimeString()" readonly />
+                    </div>
+
+                    @* --- STATUS (EDITABLE FOR EMPLOYEES) --- *@
+                    <div class="mb-3">
+                        <label for="status" class="form-label fw-bold">Status:</label>
+                        <InputSelect id="status" @bind-Value="Appointment.Status" class="form-control border-primary">
+                            <option value="Scheduled">Scheduled</option>
+                            <option value="Checked In">Checked In</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                            <option value="No Show">No Show</option>
+                        </InputSelect>
+                    </div>
+                }
+                else
+                {
+                    @* --- CUSTOMER VIEW: EDITABLE SCHEDULE + HIDDEN STATUS --- *@
+
+                    <div class="mb-3">
+                        <label class="form-label">Customer:</label>
+                        <input type="text" class="form-control" value="@CustomerName" disabled />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="scheduleddate" class="form-label">Date:</label>
+                        <InputDate id="scheduleddate"
+                                   Value="SelectedDate"
+                                   ValueChanged="@(async (DateTime value) => { SelectedDate = value; await LoadAvailableTimesAsync(); })"
+                                   ValueExpression="@(() => SelectedDate)"
+                                   class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="employeeid" class="form-label">Employee:</label>
+                        <InputSelect id="employeeid" TValue="int" Value="SelectedEmployeeId"
+                                     ValueChanged="@(async (int value) => { SelectedEmployeeId = value; await LoadAvailableTimesAsync(); })"
+                                     ValueExpression="@(() => SelectedEmployeeId)"
+                                     class="form-control">
+                            <option value="0">-- Select Employee --</option>
+                            @foreach (var employee in Employees)
+                            {
+                                <option value="@employee.EmployeeId">@employee.FirstName @employee.LastName</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="serviceid" class="form-label">Service:</label>
+                        <InputSelect id="serviceid" TValue="int" Value="SelectedServiceId"
+                                     ValueChanged="@(async (int value) => { SelectedServiceId = value; await LoadAvailableTimesAsync(); })"
+                                     ValueExpression="@(() => SelectedServiceId)"
+                                     class="form-control">
+                            <option value="0">-- Select Service --</option>
+                            @foreach (var service in Services)
+                            {
+                                <option value="@service.ServiceId">@service.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    @if (SelectedService != null)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Duration (minutes):</label>
+                            <input class="form-control" value="@SelectedService.DurationMinutes" readonly />
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label for="scheduledtime" class="form-label">Time:</label>
+                        @if (AvailableTimes.Any())
+                        {
+                            <InputSelect id="scheduledtime" @bind-Value="SelectedTime" class="form-control">
+                                <option value="">-- Select Time --</option>
+                                @foreach (var time in AvailableTimes)
+                                {
+                                    <option value="@time">@DateTime.Today.Add(time).ToString("hh:mm tt")</option>
+                                }
+                            </InputSelect>
+                        }
+                        else if (SelectedEmployeeId > 0 && SelectedServiceId > 0)
+                        {
+                            <p class="text-warning">No available times for this combination.</p>
+                        }
+                    </div>
+                }
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary" disabled="@(!SelectedTime.HasValue)">Save Changes</button>
+                    <a href="/appointments" class="btn btn-secondary ms-2">Back to List</a>
                 </div>
-
-                @* Display Customer Name (FirstName + LastName) *@
-                <div class="mb-3">
-                    <label class="form-label">Customer:</label>
-                    <input type="text" class="form-control" value="@CustomerName" disabled />
-                </div>
-
-                @* Display Service Name *@
-                <div class="mb-3">
-                    <label class="form-label">Service:</label>
-                    <input type="text" class="form-control" value="@ServiceName" disabled />
-                </div>
-
-                @* Display Date (Read Only - using readonly ensures the value is sent to server so validation passes) *@
-                <div class="mb-3">
-                    <label class="form-label">Scheduled Date:</label>
-                    <InputDate @bind-Value="Appointment.ScheduledDateTime" class="form-control" readonly />
-                </div>
-
-                @* Display Duration (Read Only - using readonly ensures the value is sent to server so validation passes) *@
-                <div class="mb-3">
-                    <label class="form-label">Duration (Minutes):</label>
-                    <InputNumber @bind-Value="Appointment.DurationMinutes" class="form-control" readonly />
-                    <ValidationMessage For="() => Appointment.DurationMinutes" class="text-danger" />
-                </div>
-
-                @* Editable Status Dropdown - UPDATED OPTIONS TO MATCH VALIDATION *@
-                <div class="mb-3">
-                    <label for="status" class="form-label">Status:</label>
-                    <InputSelect id="status" @bind-Value="Appointment.Status" class="form-control">
-                        <option value="Scheduled">Scheduled</option>
-                        <option value="Checked In">Checked In</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Cancelled">Cancelled</option>
-                        <option value="No Show">No Show</option>
-                    </InputSelect>
-                    <ValidationMessage For="() => Appointment.Status" class="text-danger" />
-                </div>
-
-                <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
         </div>
     </div>
 }
-
-<div>
-    <a href="/appointments">Back to List</a>
-</div>
 
 @code {
     [SupplyParameterFromQuery]
@@ -89,59 +156,125 @@ else
     [SupplyParameterFromForm]
     private Appointment? Appointment { get; set; }
 
-    // Variables to hold the names for display
-    private string? EmployeeName;
-    private string? CustomerName;
-    private string? ServiceName;
-    private string? Status;
+    // Lists
+    private List<Employee> Employees { get; set; } = new();
+    private List<Service> Services { get; set; } = new();
+    private List<TimeSpan> AvailableTimes { get; set; } = new();
+
+    // Form State
+    private DateTime SelectedDate { get; set; } = DateTime.Today;
+    private int SelectedEmployeeId { get; set; }
+    private int SelectedServiceId { get; set; }
+    private TimeSpan? SelectedTime { get; set; }
+
+    // Display Names for Read-Only Mode
+    private string CustomerName { get; set; } = "Unknown";
+    private string EmployeeName { get; set; } = "Unknown";
+    private string ServiceName { get; set; } = "Unknown";
+
+    private bool IsAdminOrEmployee = false;
+    private Service? SelectedService => Services.FirstOrDefault(s => s.ServiceId == SelectedServiceId);
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-
-        // 1. Load the Appointment
-        // If this is a POST (save), Appointment is already populated from the form, but we need to fill in the blanks if needed.
         Appointment ??= await context.Appointment.FirstOrDefaultAsync(m => m.AppointmentId == AppointmentId);
 
         if (Appointment is null)
         {
             NavigationManager.NavigateTo("notfound");
+            return;
         }
-        else
+
+        // Initialize Form State
+        SelectedDate = Appointment.ScheduledDateTime.Date;
+        SelectedTime = Appointment.ScheduledDateTime.TimeOfDay;
+        SelectedEmployeeId = Appointment.EmployeeId;
+        SelectedServiceId = Appointment.ServiceId;
+
+        // Load Lists
+        Employees = await context.Employee.OrderBy(e => e.FirstName).ToListAsync();
+        Services = await context.Service.OrderBy(s => s.Name).ToListAsync();
+
+        // 1. Get Names for Read-Only Mode
+        var emp = await context.Employee.FindAsync(Appointment.EmployeeId);
+        EmployeeName = emp != null ? $"{emp.FirstName} {emp.LastName}" : "Unknown";
+
+        var svc = await context.Service.FindAsync(Appointment.ServiceId);
+        ServiceName = svc?.Name ?? "Unknown";
+
+        var cust = await context.Customer.FindAsync(Appointment.CustomerId);
+        CustomerName = cust != null ? $"{cust.FirstName} {cust.LastName}" : "Unknown";
+
+        // 2. Check Permissions
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.IsInRole("Staff") || user.IsInRole("Admin") || user.IsInRole("Manager"))
         {
-            // 2. Look up the Employee (FirstName + LastName)
-            var employee = await context.Employee.FindAsync(Appointment.EmployeeId);
-            if (employee != null)
-            {
-                EmployeeName = $"{employee.FirstName} {employee.LastName}";
-            }
-            else
-            {
-                EmployeeName = "Unknown Employee";
-            }
-
-            // 3. Look up the Customer (FirstName + LastName)
-            var customer = await context.Customer.FindAsync(Appointment.CustomerId);
-            if (customer != null)
-            {
-                CustomerName = $"{customer.FirstName} {customer.LastName}";
-            }
-            else
-            {
-                CustomerName = "Unknown Customer";
-            }
-
-            // 4. Look up Service
-            var service = await context.Service.FindAsync(Appointment.ServiceId);
-            ServiceName = service?.Name ?? "Unknown Service";
+            IsAdminOrEmployee = true;
         }
+
+        // 3. Load times (so the customer view works if they are logged in)
+        await LoadAvailableTimesAsync();
+    }
+
+    private async Task LoadAvailableTimesAsync()
+    {
+        if (SelectedEmployeeId <= 0 || SelectedServiceId <= 0 || SelectedService == null)
+        {
+            AvailableTimes.Clear();
+            return;
+        }
+
+        Appointment!.EmployeeId = SelectedEmployeeId;
+        Appointment.ServiceId = SelectedServiceId;
+        Appointment.DurationMinutes = SelectedService.DurationMinutes;
+
+        var duration = SelectedService.DurationMinutes;
+        var start = new TimeSpan(9, 0, 0);
+        var end = new TimeSpan(17, 0, 0);
+
+        var allSlots = new List<TimeSpan>();
+        for (var time = start; time.Add(TimeSpan.FromMinutes(duration)) <= end; time = time.Add(TimeSpan.FromMinutes(30)))
+        {
+            allSlots.Add(time);
+        }
+
+        using var context = DbFactory.CreateDbContext();
+
+        var existingAppointments = await context.Appointment
+            .Where(a => a.EmployeeId == SelectedEmployeeId
+                     && a.ScheduledDateTime.Date == SelectedDate.Date
+                     && a.AppointmentId != Appointment.AppointmentId)
+            .ToListAsync();
+
+        AvailableTimes = allSlots.Where(slot =>
+        {
+            var slotEnd = slot.Add(TimeSpan.FromMinutes(duration));
+            return !existingAppointments.Any(appt =>
+            {
+                var apptStart = appt.ScheduledDateTime.TimeOfDay;
+                var apptEnd = apptStart.Add(TimeSpan.FromMinutes(appt.DurationMinutes));
+                return slot < apptEnd && slotEnd > apptStart;
+            });
+        }).ToList();
     }
 
     private async Task UpdateAppointment()
     {
+        if (!SelectedTime.HasValue || SelectedService == null) return;
+
+        // Only update schedule details if it's the CUSTOMER editing
+        if (!IsAdminOrEmployee)
+        {
+            Appointment!.ScheduledDateTime = SelectedDate.Date.Add(SelectedTime.Value);
+            Appointment.DurationMinutes = SelectedService.DurationMinutes;
+            Appointment.ServiceId = SelectedServiceId;
+            Appointment.EmployeeId = SelectedEmployeeId;
+        }
+
+        // Note: Appointment.Status is bound directly, so it updates automatically for Employees
         using var context = DbFactory.CreateDbContext();
-
-
         context.Attach(Appointment!).State = EntityState.Modified;
 
         try
@@ -150,7 +283,7 @@ else
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!AppointmentExists(Appointment!.AppointmentId))
+            if (!context.Appointment.Any(e => e.AppointmentId == Appointment!.AppointmentId))
             {
                 NavigationManager.NavigateTo("notfound");
             }
@@ -161,11 +294,5 @@ else
         }
 
         NavigationManager.NavigateTo("/appointments");
-    }
-
-    private bool AppointmentExists(int appointmentid)
-    {
-        using var context = DbFactory.CreateDbContext();
-        return context.Appointment.Any(e => e.AppointmentId == appointmentid);
     }
 }
