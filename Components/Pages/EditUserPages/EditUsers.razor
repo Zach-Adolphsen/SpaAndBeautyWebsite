@@ -38,7 +38,6 @@
         <PropertyColumn Property="customer => customer.Username" />
 
         <TemplateColumn Context="customer">
-            <a href="@($"customers/edit?customerid={customer.CustomerId}")">Edit</a> |
             <a href="@($"customers/details?customerid={customer.CustomerId}")">Details</a> |
             <a href="@($"customers/delete?customerid={customer.CustomerId}")">Delete</a> |
             <a href=@($"customers/promote?customerid={customer.CustomerId}")>Promote to Employee</a>

@@ -1,5 +1,6 @@
 ﻿@page "/appointments/create"
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Authorization
 @using SpaAndBeautyWebsite.Models
@@ -7,6 +8,7 @@
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize(Policy = "CustomersOrAbove")]
 
 <PageTitle>Create Appointment</PageTitle>
 
@@ -101,6 +103,11 @@
                     <p class="text-info">No available times for the selected date.</p>
                 </div>
             }
+            
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notes / Special Requests:</label>
+                <InputTextArea id="notes" @bind-Value="Appointment.Notes" class="form-control" rows="3" placeholder="Allergies, preferences, etc." />
+            </div>
 
             <button type="submit" class="btn btn-primary" disabled="@(!SelectedTime.HasValue)">
                 Create Appointment

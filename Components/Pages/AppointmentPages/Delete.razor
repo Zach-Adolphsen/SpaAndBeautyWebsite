@@ -1,9 +1,11 @@
 ﻿@page "/appointments/delete"
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using SpaAndBeautyWebsite.Models
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @inject NavigationManager NavigationManager
+@attribute [Authorize(Policy = "CustomersOrAbove")]
 
 <PageTitle>Delete</PageTitle>
 
@@ -34,6 +36,9 @@
 
             <dt class="col-sm-2">Status</dt>
             <dd class="col-sm-10">@appointment.Status</dd>
+
+            <dt class="col-sm-2">Notes</dt>
+            <dd class="col-sm-10">@appointment.Notes</dd>
         </dl>
 
         <EditForm method="post" Model="appointment" OnValidSubmit="DeleteAppointment" FormName="delete" Enhance>

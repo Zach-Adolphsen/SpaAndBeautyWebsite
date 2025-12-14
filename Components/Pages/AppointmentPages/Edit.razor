@@ -1,5 +1,6 @@
 ﻿@page "/appointments/edit"
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Authorization
 @using SpaAndBeautyWebsite.Models
@@ -7,6 +8,7 @@
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize(Policy = "CustomersOrAbove")]
 
 <PageTitle>Edit Appointment</PageTitle>
 
@@ -52,6 +54,11 @@ else
                     <div class="mb-3">
                         <label class="form-label">Time:</label>
                         <input type="text" class="form-control" value="@Appointment.ScheduledDateTime.ToShortTimeString()" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Customer Notes:</label>
+                        <textarea class="form-control" rows="3" readonly>@Appointment.Notes</textarea>
                     </div>
 
                     @* --- STATUS (EDITABLE FOR EMPLOYEES) --- *@
@@ -137,6 +144,11 @@ else
                         {
                             <p class="text-warning">No available times for this combination.</p>
                         }
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes / Special Requests:</label>
+                        <InputTextArea id="notes" @bind-Value="Appointment.Notes" class="form-control" rows="3" />
                     </div>
                 }
 
