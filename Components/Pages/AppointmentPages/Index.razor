@@ -5,6 +5,7 @@
 @using SpaAndBeautyWebsite.Models
 @using SpaAndBeautyWebsite.Data
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
 @implements IAsyncDisposable
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -28,6 +29,7 @@
     <PropertyColumn Property="@(p => p.ServiceName)" Title="Service" Sortable="true" />
     <PropertyColumn Property="@(p => p.ScheduledDateTime)" Title="Date & Time" Format="g" Sortable="true" />
     <PropertyColumn Property="@(p => p.DurationMinutes)" Title="Duration (m)" Sortable="true" Class="text-center" />
+    <PropertyColumn Property="@(p => p.Notes)" Title="Customer Notes"/>
 
     <TemplateColumn Title="Status" Sortable="true">
         @switch (context.Status)
@@ -61,14 +63,21 @@
                     Delete
                 </a>
             }
+            @if (userRole == "Admin")
+            {
+                <a href="@($"appointments/details?appointmentid={context.AppointmentId}")" class="btn btn-sm btn-outline-warning">
+                    Details
+                </a>
+            }
         </div>
     </TemplateColumn>
 
 </QuickGrid>
 
-@code {
+    @code {
     private SpaAndBeautyWebsiteContext context = default!;
     private IQueryable<AppointmentViewModel> items = default!;
+    private string userRole ="";
 
     private string GetRowClass(AppointmentViewModel appointment)
     {
@@ -88,6 +97,7 @@
         public DateTime ScheduledDateTime { get; set; }
         public int DurationMinutes { get; set; }
         public string? Status { get; set; }
+        public string? Notes { get; set; }
     }
 
     protected override async Task OnInitializedAsync()
@@ -107,6 +117,7 @@
             // Admin and Manager get FULL access (See everything)
             if (user.IsInRole("Admin") || user.IsInRole("Manager"))
             {
+                userRole = "Admin";
                 appointmentBaseQuery = context.Appointment;
             }
             // Staff get RESTRICTED access (See only their own)
@@ -152,7 +163,8 @@
                         ServiceName = s != null ? s.Name : "Unknown Service",
                         ScheduledDateTime = a.ScheduledDateTime,
                         DurationMinutes = a.DurationMinutes,
-                        Status = a.Status
+                        Status = a.Status,
+                        Notes = a.Notes
                     };
 
         items = query
@@ -162,8 +174,6 @@
                 x.Status == "Completed" ? 4 :
                 5)
             .ThenBy(x => x.ScheduledDateTime);
-
-        var count = await items.CountAsync();
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

@@ -1,6 +1,7 @@
 ﻿@page "/appointments/details"
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Data
 @using SpaAndBeautyWebsite.Models
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @inject NavigationManager NavigationManager
@@ -19,15 +20,15 @@
     }
     else {
         <dl class="row">
-            <dt class="col-sm-2">EmployeeId</dt>
-            <dd class="col-sm-10">@appointment.EmployeeId</dd>
-            <dt class="col-sm-2">CustomerId</dt>
-            <dd class="col-sm-10">@appointment.CustomerId</dd>
-            <dt class="col-sm-2">ServiceId</dt>
-            <dd class="col-sm-10">@appointment.ServiceId</dd>
-            <dt class="col-sm-2">ScheduledDateTime</dt>
+            <dt class="col-sm-2">Employee Name</dt>
+            <dd class="col-sm-10">@EmployeeName</dd>
+            <dt class="col-sm-2">Customer Name</dt>
+            <dd class="col-sm-10">@CustomerName</dd>
+            <dt class="col-sm-2">Service Name</dt>
+            <dd class="col-sm-10">@ServiceName</dd>
+            <dt class="col-sm-2">Scheduled Date & Time</dt>
             <dd class="col-sm-10">@appointment.ScheduledDateTime</dd>
-            <dt class="col-sm-2">DurationMinutes</dt>
+            <dt class="col-sm-2">Duration (min)</dt>
             <dd class="col-sm-10">@appointment.DurationMinutes</dd>
             <dt class="col-sm-2">Status</dt>
             <dd class="col-sm-10">@appointment.Status</dd>
@@ -44,7 +45,10 @@
             </dd>
         </dl>
         <div>
-            <a href="@($"/appointments/edit?appointmentid={appointment.AppointmentId}")">Edit</a> |
+            @if (appointment.Status != "Completed" && appointment.Status != "Cancelled" && appointment.Status != "No Show")
+            {
+                <a href="@($"/appointments/edit?appointmentid={appointment.AppointmentId}")">Edit | </a>
+            }
             <a href="@($"/appointments")">Back to List</a>
         </div>
     }
@@ -52,18 +56,38 @@
 
 @code {
     private Appointment? appointment;
+    private SpaAndBeautyWebsiteContext context = default!;
+
+    // variables to hold the readable names
+    private string EmployeeName = "Loading...";
+    private string CustomerName = "Loading...";
+    private string ServiceName = "Loading...";
 
     [SupplyParameterFromQuery]
     private int AppointmentId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
+        context = DbFactory.CreateDbContext();
         appointment = await context.Appointment.FirstOrDefaultAsync(m => m.AppointmentId == AppointmentId);
 
         if (appointment is null)
         {
             NavigationManager.NavigateTo("notfound");
+        }
+        else
+        {
+            // Look up Employee Name
+            var emp = await context.Employee.FindAsync(appointment.EmployeeId);
+            EmployeeName = emp != null ? $"{emp.FirstName} {emp.LastName}" : "Unknown Employee";
+
+            // Look up Customer Name
+            var cust = await context.Customer.FindAsync(appointment.CustomerId);
+            CustomerName = cust != null ? $"{cust.FirstName} {cust.LastName}" : "Unknown Customer";
+
+            // Look up Service Name
+            var svc = await context.Service.FindAsync(appointment.ServiceId);
+            ServiceName = svc?.Name ?? "Unknown Service";
         }
     }
 }
