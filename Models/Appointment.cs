@@ -37,5 +37,8 @@ namespace SpaAndBeautyWebsite.Models
             "Status must be one of the following: Scheduled, Checked In, Completed, Cancelled, No Show")]
 
         public required string Status { get; set; }
+
+        [StringLength(100)]
+        public string? Notes { get; set; }
     }
 }

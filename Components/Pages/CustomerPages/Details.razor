@@ -26,15 +26,12 @@
             <dd class="col-sm-10">@customer.LastName</dd>
             <dt class="col-sm-2">Username</dt>
             <dd class="col-sm-10">@customer.Username</dd>
-            <dt class="col-sm-2">Password</dt>
-            <dd class="col-sm-10">@customer.Password</dd>
             <dt class="col-sm-2">PhoneNumber</dt>
             <dd class="col-sm-10">@customer.PhoneNumber</dd>
             <dt class="col-sm-2">Email</dt>
             <dd class="col-sm-10">@customer.Email</dd>
         </dl>
         <div>
-            <a href="@($"/customers/edit?customerid={customer.CustomerId}")">Edit</a> |
             <a href="@($"/edit-users")">Back to Edit</a>
         </div>
     }

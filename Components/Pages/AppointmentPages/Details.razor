@@ -1,8 +1,10 @@
 ﻿@page "/appointments/details"
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using SpaAndBeautyWebsite.Models
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @inject NavigationManager NavigationManager
+@attribute [Authorize(Policy = "CustomersOrAbove")]
 
 <PageTitle>Details</PageTitle>
 
@@ -29,6 +31,17 @@
             <dd class="col-sm-10">@appointment.DurationMinutes</dd>
             <dt class="col-sm-2">Status</dt>
             <dd class="col-sm-10">@appointment.Status</dd>
+            <dt class="col-sm-2">Notes</dt>
+            <dd class="col-sm-10">
+                @if (string.IsNullOrEmpty(appointment.Notes))
+                {
+                    <span class="text-muted">No notes provided.</span>
+                }
+                else
+                {
+                    @appointment.Notes
+                }
+            </dd>
         </dl>
         <div>
             <a href="@($"/appointments/edit?appointmentid={appointment.AppointmentId}")">Edit</a> |
