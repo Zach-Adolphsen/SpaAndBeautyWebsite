@@ -1,11 +1,9 @@
 ﻿@page "/edit-users"
-@using System.Linq.Expressions
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.QuickGrid
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @using Microsoft.EntityFrameworkCore
 @using SpaAndBeautyWebsite.Data
-@using SpaAndBeautyWebsite.Models
 @attribute [Authorize(Policy = "RequireAdmin")]
 @implements IAsyncDisposable
 
@@ -40,7 +38,8 @@
         <TemplateColumn Context="customer">
             <a href="@($"customers/details?customerid={customer.CustomerId}")">Details</a> |
             <a href="@($"customers/delete?customerid={customer.CustomerId}")">Delete</a> |
-            <a href=@($"customers/promote?customerid={customer.CustomerId}")>Promote to Employee</a>
+            <a href=@($"customers/promote?customerid={customer.CustomerId}")>Promote to Employee</a> | 
+            <a href="@($"view-user-logs?customerid={customer.CustomerId}")" >View Logs</a>
         </TemplateColumn>
     </QuickGrid>
 }

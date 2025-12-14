@@ -1,0 +1,93 @@
+﻿@page "/view-user-logs"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Data
+@using SpaAndBeautyWebsite.Models
+@inject IDbContextFactory<SpaAndBeautyWebsiteContext> DbFactory
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Policy = "StaffOrAbove")]
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+
+<h3>Customer Logs</h3>
+
+@if (customer == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <strong>Customer:</strong> @customer.FirstName @customer.LastName
+        </div>
+    </div>
+
+    <h4>Appointments</h4>
+
+    <QuickGrid Class="table table-striped" Items="appointmentsQuery">
+        <PropertyColumn Property="@(a => a.ScheduledDateTime)" Title="Date" Format="g" Sortable="true" />
+        <PropertyColumn Property="@(a => a.ServiceName)" Title="Service" Sortable="true" />
+        <PropertyColumn Property="@(a => a.EmployeeName)" Title="Employee" Sortable="true" />
+        <PropertyColumn Property="@(a => a.Status)" Sortable="true" />
+        <PropertyColumn Property="@(a => a.Notes)" Sortable="true" />
+    </QuickGrid>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    private int CustomerId { get; set; }
+
+    private SpaAndBeautyWebsiteContext? context;
+    private Customer? customer;
+
+    // We use a custom class to hold the combined data
+    private IQueryable<AppointmentLogViewModel>? appointmentsQuery;
+
+    protected override async Task OnInitializedAsync()
+    {
+        context = await DbFactory.CreateDbContextAsync();
+
+        customer = await context.Customer.FirstOrDefaultAsync(c => c.CustomerId == CustomerId);
+
+        if (customer is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+            return;
+        }
+
+        appointmentsQuery = from a in context.Appointment
+                            join s in context.Service on a.ServiceId equals s.ServiceId
+                            join e in context.Employee on a.EmployeeId equals e.EmployeeId
+                            where a.CustomerId == CustomerId
+                            orderby a.ScheduledDateTime descending
+                            select new AppointmentLogViewModel
+                            {
+                                AppointmentId = a.AppointmentId,
+                                ScheduledDateTime = a.ScheduledDateTime,
+                                Status = a.Status,
+                                // Pull name from Service Table
+                                ServiceName = s.Name,
+                                // Pull names from Employee Table
+                                EmployeeName = e.FirstName + " " + e.LastName,
+                                Notes = a.Notes
+                            };
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (context is not null) await context.DisposeAsync();
+    }
+
+    // Helper class to store the result of the join
+    public class AppointmentLogViewModel
+    {
+        public int AppointmentId { get; set; }
+        public DateTime ScheduledDateTime { get; set; }
+        public required string Status { get; set; }
+        public required string ServiceName { get; set; }
+        public required string EmployeeName { get; set; }
+        public string? Notes { get; set; }
+    }
+}

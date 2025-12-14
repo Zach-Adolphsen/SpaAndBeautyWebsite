@@ -302,15 +302,15 @@
 
     public class ReviewModel
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public string Comment { get; set; }
         public int Rating { get; set; }
     }
 
     private class Service
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
+        public required string Name { get; set; }
+        public required string Description { get; set; }
         public int Duration { get; set; }
         public decimal Price { get; set; }
     }
