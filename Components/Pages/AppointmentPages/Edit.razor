@@ -61,6 +61,11 @@ else
                         <textarea class="form-control" rows="3" readonly>@Appointment.Notes</textarea>
                     </div>
 
+                    <div class="mb-3">
+                        <label for="staffComments" class="form-label fw-bold">Staff Comments (Internal):</label>
+                        <InputTextArea id="staffComments" @bind-Value="Appointment.StaffComments" class="form-control" rows="3" placeholder="Enter internal notes here..." />
+                    </div>
+
                     @* --- STATUS (EDITABLE FOR EMPLOYEES) --- *@
                     <div class="mb-3">
                         <label for="status" class="form-label fw-bold">Status:</label>

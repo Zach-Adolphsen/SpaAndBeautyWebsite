@@ -5,6 +5,7 @@
 @using SpaAndBeautyWebsite.Models
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthenticationStateProvider
 @attribute [Authorize(Policy = "CustomersOrAbove")]
 
 <PageTitle>Details</PageTitle>
@@ -43,6 +44,20 @@
                     @appointment.Notes
                 }
             </dd>
+            @if (IsStaffOrAbove)
+            {
+                <dt class="col-sm-2 text-danger">Staff Comments</dt>
+                <dd class="col-sm-10">
+                    @if (string.IsNullOrEmpty(appointment.StaffComments))
+                    {
+                        <span class="text-muted">No internal comments.</span>
+                    }
+                    else
+                    {
+                        @appointment.StaffComments
+                    }
+                </dd>
+            }
         </dl>
         <div>
             @if (appointment.Status != "Completed" && appointment.Status != "Cancelled" && appointment.Status != "No Show")
@@ -66,6 +81,8 @@
     [SupplyParameterFromQuery]
     private int AppointmentId { get; set; }
 
+    private bool IsStaffOrAbove = false;
+
     protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
@@ -88,6 +105,15 @@
             // Look up Service Name
             var svc = await context.Service.FindAsync(appointment.ServiceId);
             ServiceName = svc?.Name ?? "Unknown Service";
+
+            // User Check Permissions
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.IsInRole("Staff") || user.IsInRole("Admin") || user.IsInRole("Manager"))
+            {
+                IsStaffOrAbove = true;
+            }
         }
     }
 }

@@ -32,6 +32,7 @@ else
         <PropertyColumn Property="@(a => a.EmployeeName)" Title="Employee" Sortable="true" />
         <PropertyColumn Property="@(a => a.Status)" Sortable="true" />
         <PropertyColumn Property="@(a => a.Notes)" Sortable="true" />
+        <PropertyColumn Property="@(a => a.StaffComments)" Title="Staff Comments" Sortable="true" />
     </QuickGrid>
 }
 
@@ -71,7 +72,8 @@ else
                                 ServiceName = s.Name,
                                 // Pull names from Employee Table
                                 EmployeeName = e.FirstName + " " + e.LastName,
-                                Notes = a.Notes
+                                Notes = a.Notes,
+                                StaffComments = a.StaffComments
                             };
     }
 
@@ -89,5 +91,6 @@ else
         public required string ServiceName { get; set; }
         public required string EmployeeName { get; set; }
         public string? Notes { get; set; }
+        public string? StaffComments { get; set; }
     }
 }
