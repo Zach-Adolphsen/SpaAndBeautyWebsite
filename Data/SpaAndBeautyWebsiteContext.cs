@@ -19,5 +19,6 @@ namespace SpaAndBeautyWebsite.Data
         public DbSet<SpaAndBeautyWebsite.Models.Review> Review { get; set; } = default!;
         public DbSet<SpaAndBeautyWebsite.Models.Service> Service { get; set; } = default!;
         public DbSet<SpaAndBeautyWebsite.Models.Employee> Employee { get; set; } = default!;
+        public DbSet<SpaAndBeautyWebsite.Models.BusinessInfo> BusinessInfo { get; set; } = default!;
     }
 }

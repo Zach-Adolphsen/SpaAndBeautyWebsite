@@ -34,7 +34,7 @@ public class SeedData
                     Street = "123 Main St",
                     City = "Springfield",
                     State = "IL",
-                    ZipCode = "627-012-3456",
+                    ZipCode = "62704", // shortened to fit column length
                     JobTitle = "Massage Therapist",
                     Salary = 55000m,
                     Permission = "Staff"
@@ -50,7 +50,7 @@ public class SeedData
                     Street = "456 Oak Ave",
                     City = "Springfield",
                     State = "IL",
-                    ZipCode = "627-111-2222",
+                    ZipCode = "62705",
                     JobTitle = "Esthetician",
                     Salary = 50000m,
                     Permission = "Manager"
@@ -66,7 +66,7 @@ public class SeedData
                     Street = "789 Pine Rd",
                     City = "Springfield",
                     State = "IL",
-                    ZipCode = "627-222-3333",
+                    ZipCode = "62706",
                     JobTitle = "Nail Technician",
                     Salary = 48000m,
                     Permission = "Admin"
@@ -196,10 +196,32 @@ public class SeedData
                     Status = "Completed"
                 }
             );
+            context.SaveChanges();
+
         }
 
-       
+        // Seed business info if missing
+        if (!context.BusinessInfo.Any())
+        {
+            context.BusinessInfo.AddRange(
+                new BusinessInfo
+                {
+                    ItemType = "Hours",
+                    Description = "Mon–Fri: 9:00 AM – 7:00 PM; Sat: 9:00 AM – 5:00 PM; Sun: Closed."
+                },
+                new BusinessInfo
+                {
+                    ItemType = "Locations",
+                    Description = "Main Spa: 123 Serenity Way, Springfield, IL 62704. Uptown Studio: 456 Tranquil Ave, Springfield, IL 62705."
+                },
+                new BusinessInfo
+                {
+                    ItemType = "Cancellation",
+                    Description = "Please provide at least 24 hours' notice to cancel or reschedule appointments. Cancellations within 24 hours will incur a fee equal to 50% of the scheduled service price. No-shows are charged the full service price. For group bookings of 3 or more, please cancel at least 72 hours in advance to avoid fees."
+                }
+            );
 
-        context.SaveChanges();
+            context.SaveChanges();
+        }
     }
 }

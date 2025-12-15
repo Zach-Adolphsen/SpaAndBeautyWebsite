@@ -1,0 +1,50 @@
+﻿@page "/businessinfo/details"
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Models
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "RequireAdmin")]
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>BusinessInfo</h2>
+    <hr />
+    @if (businessinfo is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">ItemType</dt>
+            <dd class="col-sm-10">@businessinfo.ItemType</dd>
+            <dt class="col-sm-2">Description</dt>
+            <dd class="col-sm-10">@businessinfo.Description</dd>
+        </dl>
+        <div>
+            <a href="@($"/businessinfos/edit?businessinfoid={businessinfo.BusinessInfoId}")">Edit</a> |
+            <a href="@($"/businessinfos")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private BusinessInfo? businessinfo;
+
+    [SupplyParameterFromQuery]
+    private int BusinessInfoId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        businessinfo = await context.BusinessInfo.FirstOrDefaultAsync(m => m.BusinessInfoId == BusinessInfoId);
+
+        if (businessinfo is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

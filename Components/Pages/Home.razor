@@ -78,6 +78,81 @@
     </div>
 </section>
 
+<section class="info-section py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title text-uppercase">Visitor Info</h2>
+                <div class="title-divider mx-auto"></div>
+                <p class="text-muted mt-3">Essential information about our hours, locations, and cancellation policy.</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title fw-bold mb-3">Hours</h6>
+                        @if (Hours.Any())
+                        {
+                            <ul class="text-muted">
+                                @foreach (var h in Hours)
+                                {
+                                    <li>@h.Description</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-muted">Hours are not available at this time.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title fw-bold mb-3">Locations</h6>
+                        @if (Locations.Any())
+                        {
+                            <ul class="text-muted">
+                                @foreach (var l in Locations)
+                                {
+                                    <li>@l.Description</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No locations have been configured.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title fw-bold mb-3">Cancellation Policy</h6>
+                        @if (Cancellations.Any())
+                        {
+                            @foreach (var c in Cancellations)
+                            {
+                                <p class="card-text text-muted">@c.Description</p>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">Cancellation policy is not provided. Please contact us for details.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="reviews-section py-5 bg-light">
     <div class="container">
         <div class="row mb-5">
@@ -318,6 +393,12 @@
     private List<Service> services = new();
     private readonly List<ReviewModel> Reviews = new();
 
+    // Business info lists for Hours, Locations and Cancellation Policies
+    private List<BusinessInfo> businessInfo = new();
+    private List<BusinessInfo> Hours = new();
+    private List<BusinessInfo> Locations = new();
+    private List<BusinessInfo> Cancellations = new();
+
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
@@ -338,6 +419,24 @@
                 Price = s.DurationPrice
             })
             .ToListAsync();
+
+        // Fetch BusinessInfo items
+        businessInfo = await context.BusinessInfo
+            .OrderBy(b => b.BusinessInfoId)
+            .ToListAsync();
+
+        // Categorize business info robustly by matching keywords in ItemType
+        Hours = businessInfo
+            .Where(b => b.ItemType != null && b.ItemType.Contains("hour", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        Locations = businessInfo
+            .Where(b => b.ItemType != null && (b.ItemType.Contains("locat", StringComparison.OrdinalIgnoreCase) || b.ItemType.Contains("address", StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+        Cancellations = businessInfo
+            .Where(b => b.ItemType != null && (b.ItemType.Contains("cancel", StringComparison.OrdinalIgnoreCase) || b.ItemType.Contains("policy", StringComparison.OrdinalIgnoreCase)))
+            .ToList();
 
         // Clear existing list just in case
         Reviews.Clear();

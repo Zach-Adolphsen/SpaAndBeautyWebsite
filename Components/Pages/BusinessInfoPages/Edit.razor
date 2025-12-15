@@ -1,0 +1,98 @@
+﻿@page "/businessinfo/edit"
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Models
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "RequireAdmin")]
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>BusinessInfo</h2>
+<hr />
+@if (BusinessInfo is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="BusinessInfo" OnValidSubmit="UpdateBusinessInfo" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="BusinessInfo.BusinessInfoId" value="@BusinessInfo.BusinessInfoId" />
+                <div class="mb-3">
+                <span class="text-danger">*</span>
+                    <label for="itemtype" class="form-label">ItemType:</label>
+                    <InputText id="itemtype" @bind-Value="BusinessInfo.ItemType" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => BusinessInfo.ItemType" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                <span class="text-danger">*</span>
+                    <label for="description" class="form-label">Description:</label>
+                    <InputText id="description" @bind-Value="BusinessInfo.Description" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => BusinessInfo.Description" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/businessinfos">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int BusinessInfoId { get; set; }
+
+    [SupplyParameterFromForm]
+    private BusinessInfo? BusinessInfo { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        BusinessInfo ??= await context.BusinessInfo.FirstOrDefaultAsync(m => m.BusinessInfoId == BusinessInfoId);
+
+        if (BusinessInfo is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateBusinessInfo()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(BusinessInfo!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!BusinessInfoExists(BusinessInfo!.BusinessInfoId))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/businessinfos");
+    }
+
+    private bool BusinessInfoExists(int businessinfoid)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.BusinessInfo.Any(e => e.BusinessInfoId == businessinfoid);
+    }
+}

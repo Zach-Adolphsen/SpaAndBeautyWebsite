@@ -1,0 +1,55 @@
+﻿@page "/businessinfo/create"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using SpaAndBeautyWebsite.Models
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Policy = "RequireAdmin")]
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>BusinessInfo</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="BusinessInfo" OnValidSubmit="AddBusinessInfo" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <span class="text-danger">*</span>
+                <label for="itemtype" class="form-label">ItemType:</label> 
+                <InputText id="itemtype" @bind-Value="BusinessInfo.ItemType" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => BusinessInfo.ItemType" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <span class="text-danger">*</span>
+                <label for="description" class="form-label">Description:</label> 
+                <InputText id="description" @bind-Value="BusinessInfo.Description" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => BusinessInfo.Description" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/businessinfos">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private BusinessInfo BusinessInfo { get; set; } = default!;
+
+    protected override void OnInitialized() => BusinessInfo ??= new BusinessInfo { ItemType = string.Empty, Description = string.Empty };
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddBusinessInfo()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.BusinessInfo.Add(BusinessInfo);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/businessinfos");
+    }
+}

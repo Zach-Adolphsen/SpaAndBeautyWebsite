@@ -1,0 +1,39 @@
+﻿@page "/edit-business-info"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using SpaAndBeautyWebsite.Models
+@using SpaAndBeautyWebsite.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "RequireAdmin")]
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<!--<p>
+    <a href="businessinfos/create">Create New</a>
+    </p>-->
+
+<QuickGrid Class="table" Items="context.BusinessInfo">
+    <PropertyColumn Property="businessinfo => businessinfo.ItemType" />
+    <PropertyColumn Property="businessinfo => businessinfo.Description" />
+
+    <TemplateColumn Context="businessinfo">
+        <a href="@($"businessinfos/edit?businessinfoid={businessinfo.BusinessInfoId}")">Edit</a> |
+        <a href="@($"businessinfos/details?businessinfoid={businessinfo.BusinessInfoId}")">Details</a> 
+        <!--<a href="@($"businessinfos/delete?businessinfoid={businessinfo.BusinessInfoId}")">Delete</a>-->
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private SpaAndBeautyWebsiteContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}
