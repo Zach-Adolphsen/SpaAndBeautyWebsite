@@ -1,39 +1,85 @@
 ﻿@page "/reviews"
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using SpaAndBeautyWebsite.Models
 @using SpaAndBeautyWebsite.Data
+@using Microsoft.AspNetCore.Components.Authorization
 @implements IAsyncDisposable
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize(Policy = "ManagerOrAbove")]
 
 <PageTitle>Index</PageTitle>
 
-<h1>Index</h1>
+<h1>Reviews</h1>
 
 <p>
     <a href="reviews/create">Create New</a>
 </p>
 
-<QuickGrid Class="table" Items="context.Review">
-    <PropertyColumn Property="review => review.EmployeeId" />
-    <PropertyColumn Property="review => review.CustomerId" />
-    <PropertyColumn Property="review => review.ServiceId" />
+<QuickGrid Class="table" Items="FilteredReviews">
+    <AuthorizeView Policy="ManagerOrAbove">
+        <Authorized>
+            <PropertyColumn Property="review => review.Status" Sortable="true" />
+        </Authorized>
+    </AuthorizeView>
+
+    @* --- CHANGE START: Display Employee Name instead of ID --- *@
+    <TemplateColumn Title="Employee" Context="review">
+        @if (review.Employee != null)
+        {
+            @($"{review.Employee.FirstName} {review.Employee.LastName}")
+        }
+        else
+        {
+            <em>Unknown</em>
+        }
+    </TemplateColumn>
+    @* --- CHANGE END --- *@
+
     <PropertyColumn Property="review => review.Description" />
-    <PropertyColumn Property="review => review.Rating" />
+    <PropertyColumn Property="review => review.Rating" Sortable="true" />
 
     <TemplateColumn Context="review">
-        <a href="@($"reviews/edit?reviewid={review.ReviewId}")">Edit</a> |
+        <a href="@($"reviews/edit?reviewid={review.ReviewId}")">
+            <AuthorizeView Policy="ManagerOrAbove">
+                <Authorized>Moderate</Authorized>
+                <NotAuthorized>Edit</NotAuthorized>
+            </AuthorizeView>
+        </a> |
         <a href="@($"reviews/details?reviewid={review.ReviewId}")">Details</a> |
-        <a href="@($"reviews/delete?reviewid={review.ReviewId}")">Delete</a>
+        <AuthorizeView Policy="ManagerOrAbove">
+            <Authorized>
+                <a href="@($"reviews/delete?reviewid={review.ReviewId}")">Delete</a>
+            </Authorized>
+        </AuthorizeView>
     </TemplateColumn>
 </QuickGrid>
 
 @code {
     private SpaAndBeautyWebsiteContext context = default!;
+    private IQueryable<Review> FilteredReviews = default!;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        var baseQuery = context.Review.Include(r => r.Employee);
+
+        if (user.IsInRole("Admin") || user.IsInRole("Manager"))
+        {
+            // Show EVERYTHING (Pending, Rejected, Approved)
+            FilteredReviews = baseQuery;
+        }
+        else
+        {
+            // Regular users only see Approved reviews
+            FilteredReviews = baseQuery.Where(r => r.Status == "Approved");
+        }
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

@@ -323,7 +323,9 @@
         using var context = DbFactory.CreateDbContext();
         var realReviews = await context.Review
             .Include(r => r.Customer)
+            .Where(r => r.Status == "Approved" && r.Rating >= 7)
             .OrderByDescending(r => r.ReviewId)
+            .Take(20)
             .ToListAsync();
 
         // Fetch Services
@@ -337,7 +339,11 @@
             })
             .ToListAsync();
 
-        foreach (var r in ((IEnumerable<Review>)realReviews).Reverse())
+        // Clear existing list just in case
+        Reviews.Clear();
+
+        // Populate the display model
+        foreach (var r in realReviews)
         {
             var displayModel = new ReviewModel
             {
@@ -345,7 +351,7 @@
                 Comment = r.Description,
                 Rating = r.Rating
             };
-            Reviews.Insert(0, displayModel);
+            Reviews.Add(displayModel);
         }
 
         // Get auth info safely (avoids relying on a CascadingAuthenticationState)
@@ -366,7 +372,6 @@
         }
         catch
         {
-            // swallow errors here so page render doesn't fail when auth provider not available
             IsAuthenticated = false;
             CanViewAppointments = false;
         }

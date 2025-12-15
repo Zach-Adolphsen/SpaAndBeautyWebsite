@@ -85,7 +85,11 @@
 
 @code {
     [SupplyParameterFromForm]
-    private Review Review { get; set; } = new() { Description = string.Empty };
+    private Review Review { get; set; } = new()
+    {
+        Description = string.Empty,
+        Status = "Pending" // Force Pending on creation
+    };
 
     private List<Service> Services = new();
     private List<Employee> Employees = new();

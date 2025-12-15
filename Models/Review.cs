@@ -19,8 +19,15 @@ namespace SpaAndBeautyWebsite.Models
         [Range(1, 10)]
         public int Rating { get; set; }
 
-        // --- NAVIGATION PROPERTIES (THE FIX) ---
-        // These allow you to type "review.Customer.FirstName"
+        [Required]
+        [StringLength(20)]
+        [RegularExpression(@"^(Pending|Approved|Rejected)$", ErrorMessage = "Status must be: Pending, Approved, or Rejected")]
+        public string Status { get; set; } = "Pending";
+
+        [StringLength(500)]
+        public string? ManagerComments { get; set; }
+
+
         [ForeignKey("CustomerId")]
         public virtual Customer? Customer { get; set; }
 
