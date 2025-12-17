@@ -1,19 +1,21 @@
-﻿using SpaAndBeautyWebsite.Components;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using SpaAndBeautyWebsite.Data;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using SpaAndBeautyWebsite.Interfaces;
-using SpaAndBeautyWebsite.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.EntityFrameworkCore;
+using SpaAndBeautyWebsite.Authorization;
+using SpaAndBeautyWebsite.Components;
+using SpaAndBeautyWebsite.Data;
+using SpaAndBeautyWebsite.Interfaces;
+using SpaAndBeautyWebsite.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<SpaAndBeautyWebsiteContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SpaAndBeautyWebsiteContext") ?? throw new InvalidOperationException("Connection string 'SpaAndBeautyWebsiteContext' not found.")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SpaAndBeautyWebsiteContext") ??
+                         throw new InvalidOperationException(
+                             "Connection string 'SpaAndBeautyWebsiteContext' not found.")));
 
 builder.Services.AddQuickGridEntityFrameworkAdapter();
 
@@ -55,10 +57,10 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AnonymousOnly", policy =>
-        policy.Requirements.Add(new SpaAndBeautyWebsite.Authorization.AnonymousOnlyRequirement()));
+        policy.Requirements.Add(new AnonymousOnlyRequirement()));
 });
 
-builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, SpaAndBeautyWebsite.Authorization.AnonymousOnlyHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, AnonymousOnlyHandler>();
 
 // ---------------------------------------------------------
 // UPDATED: Added Razor Pages support here
@@ -71,8 +73,6 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
-
-app.UseAntiforgery();
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
@@ -96,31 +96,28 @@ app.MapGet("/signin-local", async (HttpContext httpContext) =>
     var returnUrl = q["returnUrl"].FirstOrDefault() ?? "/";
 
     if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(id))
-    {
         return Results.BadRequest("username and id required");
-    }
 
-    var allowedRoles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Customer", "Staff", "Manager", "Admin" };
-    if (!allowedRoles.Contains(role))
-    {
-        return Results.BadRequest("invalid role");
-    }
+    var allowedRoles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        { "Customer", "Staff", "Manager", "Admin" };
+    if (!allowedRoles.Contains(role)) return Results.BadRequest("invalid role");
 
     var claims = new List<Claim>
     {
-        new Claim(ClaimTypes.Name, username),
-        new Claim(ClaimTypes.NameIdentifier, id),
-        new Claim(ClaimTypes.Role, role)
+        new(ClaimTypes.Name, username),
+        new(ClaimTypes.NameIdentifier, id),
+        new(ClaimTypes.Role, role)
     };
 
     var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
     var principal = new ClaimsPrincipal(identity);
 
     // SignIn on a normal HTTP response (safe to set cookies here)
-    await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, new AuthenticationProperties
-    {
-        IsPersistent = true
-    });
+    await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
+        new AuthenticationProperties
+        {
+            IsPersistent = true
+        });
 
     return Results.Redirect(returnUrl);
 });
@@ -149,27 +146,20 @@ app.MapGet("/account/signout", async (HttpContext httpContext) =>
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseExceptionHandler("/Error", true);
     app.UseHsts();
     app.UseMigrationsEndPoint();
 }
 
 app.UseHttpsRedirection();
 
-app.UseAntiforgery();
-
-// Enable authentication + authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseAntiforgery();
+
 app.MapStaticAssets();
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-
-// ---------------------------------------------------------
-// UPDATED: Map Razor Pages routes here
-// ---------------------------------------------------------
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapRazorPages();
 
 app.Run();

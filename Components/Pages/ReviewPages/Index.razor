@@ -9,6 +9,7 @@
 @inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @attribute [Authorize(Policy = "ManagerOrAbove")]
+@rendermode InteractiveServer
 
 <PageTitle>Index</PageTitle>
 
@@ -19,9 +20,10 @@
 </p>
 
 <QuickGrid Class="table" Items="FilteredReviews">
+    <AntiforgeryToken/>
     <AuthorizeView Policy="ManagerOrAbove">
         <Authorized>
-            <PropertyColumn Property="review => review.Status" Sortable="true" />
+            <PropertyColumn Property="review => review.Status" Sortable="true"/>
         </Authorized>
     </AuthorizeView>
 
@@ -38,8 +40,8 @@
     </TemplateColumn>
     @* --- CHANGE END --- *@
 
-    <PropertyColumn Property="review => review.Description" />
-    <PropertyColumn Property="review => review.Rating" Sortable="true" />
+    <PropertyColumn Property="review => review.Description"/>
+    <PropertyColumn Property="review => review.Rating" Sortable="true"/>
 
     <TemplateColumn Context="review">
         <a href="@($"reviews/edit?reviewid={review.ReviewId}")">
