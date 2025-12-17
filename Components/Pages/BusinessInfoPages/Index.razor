@@ -21,8 +21,8 @@
     <PropertyColumn Property="businessinfo => businessinfo.Description" />
 
     <TemplateColumn Context="businessinfo">
-        <a href="@($"businessinfos/edit?businessinfoid={businessinfo.BusinessInfoId}")">Edit</a> |
-        <a href="@($"businessinfos/details?businessinfoid={businessinfo.BusinessInfoId}")">Details</a> 
+        <a href="@($"businessinfo/edit?businessinfoid={businessinfo.BusinessInfoId}")">Edit</a> |
+        <a href="@($"businessinfo/details?businessinfoid={businessinfo.BusinessInfoId}")">Details</a> 
         <!--<a href="@($"businessinfos/delete?businessinfoid={businessinfo.BusinessInfoId}")">Delete</a>-->
     </TemplateColumn>
 </QuickGrid>
