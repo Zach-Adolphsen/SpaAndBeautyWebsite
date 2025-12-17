@@ -1,10 +1,10 @@
 ﻿@page "/edit-users"
+@inject IDbContextFactory<SpaAndBeautyWebsiteContext> DbFactory
+@attribute [Authorize(Policy = "RequireAdmin")]
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.QuickGrid
-@inject IDbContextFactory<SpaAndBeautyWebsite.Data.SpaAndBeautyWebsiteContext> DbFactory
 @using Microsoft.EntityFrameworkCore
 @using SpaAndBeautyWebsite.Data
-@attribute [Authorize(Policy = "RequireAdmin")]
 @implements IAsyncDisposable
 
 <h3>Edit Employees</h3>
@@ -12,12 +12,12 @@
 @if (employeeContext is not null)
 {
     <QuickGrid Class="table" Items="employeeContext.Employee">
-        <PropertyColumn Property="employee => employee.FirstName" />
-        <PropertyColumn Property="employee => employee.LastName" />
-        <PropertyColumn Property="employee => employee.Username" />
-        <PropertyColumn Property="employee => employee.JobTitle" />
-        <PropertyColumn Property="employee => employee.Salary" />
-        <PropertyColumn Property="employee => employee.Permission" />
+        <PropertyColumn Property="employee => employee.FirstName"/>
+        <PropertyColumn Property="employee => employee.LastName"/>
+        <PropertyColumn Property="employee => employee.Username"/>
+        <PropertyColumn Property="employee => employee.JobTitle"/>
+        <PropertyColumn Property="employee => employee.Salary"/>
+        <PropertyColumn Property="employee => employee.Permission"/>
 
         <TemplateColumn Context="employee">
             <a href="@($"employees/edit?employeeid={employee.EmployeeId}")">Edit</a> |
@@ -31,15 +31,15 @@
 @if (customerContext is not null)
 {
     <QuickGrid Class="table" Items="customerContext.Customer">
-        <PropertyColumn Property="customer => customer.FirstName" />
-        <PropertyColumn Property="customer => customer.LastName" />
-        <PropertyColumn Property="customer => customer.Username" />
+        <PropertyColumn Property="customer => customer.FirstName"/>
+        <PropertyColumn Property="customer => customer.LastName"/>
+        <PropertyColumn Property="customer => customer.Username"/>
 
         <TemplateColumn Context="customer">
             <a href="@($"customers/details?customerid={customer.CustomerId}")">Details</a> |
             <a href="@($"customers/delete?customerid={customer.CustomerId}")">Delete</a> |
-            <a href=@($"customers/promote?customerid={customer.CustomerId}")>Promote to Employee</a> | 
-            <a href="@($"view-user-logs?customerid={customer.CustomerId}")" >View Logs</a>
+            <a href=@($"customers/promote?customerid={customer.CustomerId}")>Promote to Employee</a> |
+            <a href="@($"view-user-logs?customerid={customer.CustomerId}")">View Logs</a>
         </TemplateColumn>
     </QuickGrid>
 }
@@ -60,9 +60,11 @@
         {
             await employeeContext.DisposeAsync();
         }
+
         if (customerContext is not null)
         {
             await customerContext.DisposeAsync();
         }
     }
+
 }

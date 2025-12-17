@@ -69,9 +69,7 @@ else
                 AppointmentId = a.AppointmentId,
                 ScheduledDateTime = a.ScheduledDateTime,
                 Status = a.Status,
-                // Pull name from Service Table
                 ServiceName = s.Name,
-                // Pull names from Employee Table
                 EmployeeName = e.FirstName + " " + e.LastName,
                 Notes = a.Notes,
                 StaffComments = a.StaffComments
@@ -83,7 +81,6 @@ else
         if (context is not null) await context.DisposeAsync();
     }
 
-    // Helper class to store the result of the join
     public class AppointmentLogViewModel
     {
         public int AppointmentId { get; set; }

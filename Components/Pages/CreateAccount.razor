@@ -110,15 +110,12 @@
         context.Customer.Add(Customer);
         await context.SaveChangesAsync();
 
-        // Do not sign-in via HttpContext inside the Blazor Server circuit (response already started).
-        // Instead navigate to a normal HTTP endpoint that performs the cookie sign-in, so cookies can be set.
         var signinUrl = $"/signin-local?username={Uri.EscapeDataString(Customer.Username)}&id={Customer.CustomerId}&returnUrl=/";
         NavigationManager.NavigateTo(signinUrl, forceLoad: true);
     }
 }
 
 <script>
-    // Ensure this runs in the browser and survives multiple navigations.
     (function () {
         if (window.accountInputSizer) return;
 
@@ -142,12 +139,9 @@
             applyMinWidth: function (selector) {
                 const inputs = Array.from(document.querySelectorAll(selector));
                 if (!inputs.length) return;
-                // clear any inline width so we measure natural sizes
                 inputs.forEach(i => i.style.width = '');
-                // measure natural widths (use getBoundingClientRect for visual width)
                 const widths = inputs.map(i => i.getBoundingClientRect().width);
                 const min = Math.min.apply(null, widths);
-                // apply the minimum width to every input (use px)
                 inputs.forEach(i => i.style.width = min + 'px');
             }
         };

@@ -108,19 +108,17 @@
         var user = authState.User;
         var currentUsername = user.Identity?.Name ?? "";
 
-
-        // FAIL-SAFE: Default to showing NOTHING.
         IQueryable<Appointment> appointmentBaseQuery = context.Appointment.Where(a => false);
 
         if (user.Identity is not null && user.Identity.IsAuthenticated)
         {
-            // Admin and Manager get FULL access (See everything)
+            // Admin and Manager get FULL access
             if (user.IsInRole("Admin") || user.IsInRole("Manager"))
             {
                 userRole = "Admin";
                 appointmentBaseQuery = context.Appointment;
             }
-            // Staff get RESTRICTED access (See only their own)
+            // Staff get RESTRICTED access
             else if (user.IsInRole("Staff"))
             {
                 // Look up the specific Staff member in the Employee table
@@ -133,7 +131,7 @@
                         .Where(a => a.EmployeeId == currentEmployee.EmployeeId);
                 }
             }
-            // Customers get RESTRICTED access (See only their own)
+            // Customers get RESTRICTED access
             else if (user.IsInRole("Customer"))
             {
                 var currentCustomer = await context.Customer
@@ -147,7 +145,6 @@
             }
         }
 
-        // Run the final query
         var query = from a in appointmentBaseQuery
                     join e in context.Employee on a.EmployeeId equals e.EmployeeId into eGroup
                     from e in eGroup.DefaultIfEmpty()

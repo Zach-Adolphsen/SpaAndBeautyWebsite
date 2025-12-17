@@ -30,7 +30,7 @@ else
 
                 @if (IsAdminOrEmployee)
                 {
-                    @* --- EMPLOYEE VIEW: READ-ONLY DETAILS + EDITABLE STATUS --- *@
+                    @* --- EMPLOYEE VIEW (READ-ONLY DETAILS + EDITABLE STATUS) --- *@
                     <div class="mb-3">
                         <label class="form-label">Customer:</label>
                         <input type="text" class="form-control" value="@CustomerName" readonly />
@@ -81,7 +81,7 @@ else
                 }
                 else
                 {
-                    @* --- CUSTOMER VIEW: EDITABLE SCHEDULE + HIDDEN STATUS --- *@
+                    @* --- CUSTOMER VIEW (EDITABLE SCHEDULE + HIDDEN STATUS) --- *@
 
                     <div class="mb-3">
                         <label class="form-label">Customer:</label>
@@ -213,7 +213,7 @@ else
         Employees = await context.Employee.OrderBy(e => e.FirstName).ToListAsync();
         Services = await context.Service.OrderBy(s => s.Name).ToListAsync();
 
-        // 1. Get Names for Read-Only Mode
+        // Get Names for Read-Only Mode
         var emp = await context.Employee.FindAsync(Appointment.EmployeeId);
         EmployeeName = emp != null ? $"{emp.FirstName} {emp.LastName}" : "Unknown";
 
@@ -223,7 +223,7 @@ else
         var cust = await context.Customer.FindAsync(Appointment.CustomerId);
         CustomerName = cust != null ? $"{cust.FirstName} {cust.LastName}" : "Unknown";
 
-        // 2. Check Permissions
+        // Check Permissions
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         if (user.IsInRole("Staff") || user.IsInRole("Admin") || user.IsInRole("Manager"))
@@ -231,7 +231,7 @@ else
             IsAdminOrEmployee = true;
         }
 
-        // 3. Load times (so the customer view works if they are logged in)
+        // Load times (so the customer view works if they are logged in)
         await LoadAvailableTimesAsync();
     }
 
@@ -290,7 +290,6 @@ else
             Appointment.EmployeeId = SelectedEmployeeId;
         }
 
-        // Note: Appointment.Status is bound directly, so it updates automatically for Employees
         using var context = DbFactory.CreateDbContext();
         context.Attach(Appointment!).State = EntityState.Modified;
 
