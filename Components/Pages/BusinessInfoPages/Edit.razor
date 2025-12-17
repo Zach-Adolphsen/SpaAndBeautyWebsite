@@ -5,6 +5,7 @@
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Policy = "RequireAdmin")]
+@rendermode InteractiveServer
 
 <PageTitle>Edit</PageTitle>
 
@@ -21,6 +22,7 @@ else
     <div class="row">
         <div class="col-md-4">
             <EditForm method="post" Model="BusinessInfo" OnValidSubmit="UpdateBusinessInfo" FormName="edit" Enhance>
+                <AntiforgeryToken />
                 <DataAnnotationsValidator />
                 <ValidationSummary role="alert"/>
                 <input type="hidden" name="BusinessInfo.BusinessInfoId" value="@BusinessInfo.BusinessInfoId" />
@@ -43,7 +45,7 @@ else
 }
 
 <div>
-    <a href="/businessinfos">Back to List</a>
+    <a href="/edit-business-info">Back to List</a>
 </div>
 
 @code {
@@ -87,7 +89,7 @@ else
             }
         }
 
-        NavigationManager.NavigateTo("/businessinfos");
+        NavigationManager.NavigateTo("/edit-business-info");
     }
 
     private bool BusinessInfoExists(int businessinfoid)
